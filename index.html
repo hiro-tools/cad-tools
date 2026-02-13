@@ -43,7 +43,7 @@
       padding-left: 8px;
     }
 
-    /* 計算結果表示 (Sticky) */
+    /* 計算結果表示 (Sticky) - v22で拡張 */
     .result-box {
       background: #212529;
       color: #fff;
@@ -56,6 +56,16 @@
       z-index: 100;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
+    
+    /* v22追加: プレビュー情報 */
+    .res-info-line {
+      font-size: 12px; color: #adb5bd; margin-bottom: 2px;
+    }
+    .res-dim-line {
+      font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 8px;
+      border-bottom: 1px solid #495057; padding-bottom: 8px;
+    }
+
     .result-row {
         display: flex;
         justify-content: center;
@@ -280,6 +290,13 @@
   <h1>金属重量計算ツール</h1>
 
   <div class="result-box">
+    <div class="res-info-line">
+      <span id="previewShape"></span> / <span id="previewMat"></span>
+    </div>
+    <div class="res-dim-line" id="previewDim">
+      -
+    </div>
+
     <div class="result-row">
       <span id="weightVal" class="result-val">0.0</span>
       <span class="result-unit">kg</span>
@@ -415,7 +432,7 @@
 </div>
 
 <script>
-/* ================= データ定義 (v20と同じ) ================= */
+/* ================= データ定義 (変更なし) ================= */
 const commonPipes = [
   {label:"15A (φ21.7 t2.8)", D:21.7, t:2.8}, {label:"20A (φ27.2 t2.8)", D:27.2, t:2.8},
   {label:"25A (φ34.0 t3.2)", D:34.0, t:3.2}, {label:"32A (φ42.7 t3.5)", D:42.7, t:3.5},
@@ -867,6 +884,23 @@ function calc() {
   
   state.currentTotal = totalW; 
   state.currentDim = getDimString(shape, v1, v2, v3, v4);
+
+  // v22: プレビュー情報の更新
+  updatePreview(L);
+}
+
+function updatePreview(L) {
+  const shapeNames = { plate:'平鋼', round:'丸棒', pipe:'丸パイプ', square:'角パイプ', angle:'アングル', channel:'チャンネル', ibeam:'I形鋼', hbeam:'H鋼' };
+  document.getElementById('previewShape').textContent = shapeNames[state.shape];
+  document.getElementById('previewMat').textContent = materials[state.mat].label.split(' ')[0];
+
+  let dimStr = state.currentDim;
+  if(state.shape === 'plate') {
+      dimStr += ` x ${L}`;
+  } else {
+      dimStr += ` L=${L}`;
+  }
+  document.getElementById('previewDim').textContent = dimStr;
 }
 
 function getDimString(s, v1, v2, v3, v4) {
@@ -928,8 +962,6 @@ function addToList(isUpdateOnly=false) {
   `;
   
   tbody.appendChild(tr);
-
-  // 追加した行が見えるようにスクロール
   tr.scrollIntoView({behavior: 'smooth', block: 'center'});
 }
 
