@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>金属重量計算ツール</title>
   <style>
-    /* ===== 基本スタイル (v19ベース) ===== */
+    /* ===== 基本スタイル (v20ベース) ===== */
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       margin: 16px;
@@ -236,7 +236,6 @@
       border: 1px solid #ced4da; border-radius: 4px; text-align: right;
     }
     
-    /* 青枠内の入力フィールド強調 */
     .highlight-input input {
       font-weight: bold; color: #007bff;
     }
@@ -297,7 +296,7 @@
     </div>
   </div>
 
-  <div class="group-box">
+  <div class="group-box" id="listGroupBox">
     <span class="group-title">集計リスト</span>
     <div class="table-container">
       <table id="listTable">
@@ -416,7 +415,7 @@
 </div>
 
 <script>
-/* ================= データ定義 (変更なし) ================= */
+/* ================= データ定義 (v20と同じ) ================= */
 const commonPipes = [
   {label:"15A (φ21.7 t2.8)", D:21.7, t:2.8}, {label:"20A (φ27.2 t2.8)", D:27.2, t:2.8},
   {label:"25A (φ34.0 t3.2)", D:34.0, t:3.2}, {label:"32A (φ42.7 t3.5)", D:42.7, t:3.5},
@@ -684,17 +683,11 @@ function buildUI(shape) {
   const stdArea = document.getElementById('stdButtonsArea');
   
   inputArea.innerHTML = '';
-  blueBoxExtra.innerHTML = ''; // 青枠内の拡張エリアをクリア
+  blueBoxExtra.innerHTML = '';
   stdArea.innerHTML = '';
 
-  // 入力フィールド作成用関数
-  // target: 挿入先のDOM要素
-  // id, label, val: 基本情報
-  // isSmallDim: trueなら±100,±1000ボタンを生成しない
   const mkInput = (target, id, label, defaultVal, isSmallDim=false) => {
     const div = document.createElement('div');
-    
-    // 青枠内に追加する場合はスタイルを調整
     if(target === blueBoxExtra) {
         div.style.marginBottom = "12px";
     } else {
@@ -703,7 +696,6 @@ function buildUI(shape) {
 
     let btnsHtml = '';
     if (isSmallDim) {
-        // 小さい寸法用（板厚など）：大きなマイナスボタンを排除
         btnsHtml = `
             <div class="adjust-btns">
                 <button onclick="adjVal('${id}', -10)">-10</button>
@@ -714,7 +706,6 @@ function buildUI(shape) {
             </div>
         `;
     } else {
-        // 通常寸法用：フルセット
         btnsHtml = `
             <div class="adjust-btns">
                 <button onclick="adjVal('${id}', -100)">-100</button>
@@ -738,8 +729,7 @@ function buildUI(shape) {
   };
 
   if(shape === 'plate') {
-    // 平鋼：板厚は詳細へ(小)、幅は青枠へ(大)
-    mkInput(inputArea, 'val1', '板厚 t (mm)', 6, true); // true = 小さい寸法モード
+    mkInput(inputArea, 'val1', '板厚 t (mm)', 6, true);
     mkInput(blueBoxExtra, 'val2', '幅 W (mm)', 100, false);
   } else if(shape === 'round') {
     mkInput(inputArea, 'val1', '直径 φ (mm)', 25, false);
@@ -760,7 +750,7 @@ function buildUI(shape) {
     mkInput(inputArea, 'val4', 'フランジ t2 (mm)', 7, true);
   }
 
-  // 規格ボタン作成
+  // 規格ボタン
   let stdData = null;
   const matDef = materials[state.mat];
   if (matDef) {
@@ -938,6 +928,9 @@ function addToList(isUpdateOnly=false) {
   `;
   
   tbody.appendChild(tr);
+
+  // 追加した行が見えるようにスクロール
+  tr.scrollIntoView({behavior: 'smooth', block: 'center'});
 }
 
 window.updateQty = function(btn, delta) {
