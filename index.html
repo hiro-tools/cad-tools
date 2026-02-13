@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>金属重量計算ツール</title>
   <style>
-    /* ===== 基本スタイル ===== */
+    /* ===== 基本スタイル (v19ベース) ===== */
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       margin: 16px;
       background: #f4f6f9;
       color: #333;
       line-height: 1.5;
-      padding-bottom: 60px;
+      padding-bottom: 80px;
     }
     h1 { font-size: 18px; margin: 0 0 12px; color: #1a1a1a; }
     
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
       background: #fff;
       padding: 20px;
@@ -33,222 +33,97 @@
       margin-bottom: 16px;
       background: #fff;
     }
-    .section-title {
+    .group-title {
       font-size: 14px;
-      font-weight: 700;
-      color: #0078d4;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-    }
-    .section-title::before {
-      content: '';
-      display: inline-block;
-      width: 5px;
-      height: 16px;
-      background: #0078d4;
-      margin-right: 8px;
-      border-radius: 3px;
-    }
-
-    /* ボタン共通 */
-    button {
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      background: #f8f9fa;
-      cursor: pointer;
-      color: #495057;
-      font-size: 14px;
-      padding: 10px;
-      transition: all 0.1s;
-      user-select: none;
-    }
-    button:active { transform: translateY(1px); background: #e2e6ea; }
-    
-    /* 選択中ボタン */
-    button.active {
-      background: #0078d4 !important; 
-      color: #fff !important;         
-      border-color: #005a9e !important;
-      font-weight: 700;
-      box-shadow: 0 2px 5px rgba(0,120,212,0.3);
-    }
-    /* 選択時のサブテキストを白くする */
-    button.active .text-sm {
-      color: rgba(255,255,255,0.9) !important;
-    }
-
-    /* 形状・材質ボタンエリア */
-    .btn-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 8px;
-    }
-    .btn-grid button { min-height: 48px; }
-
-    /* 規格ボタンエリア */
-    .std-buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 少し幅広に */
-      gap: 6px;
-      margin-bottom: 12px;
-      background: #f8f9fa;
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #eee;
-    }
-    .std-buttons button {
-      font-size: 11px;
-      font-weight: 500;
-      background: #fff;
-      border: 1px solid #d1d1d1;
-      min-height: 40px;
-      color: #333;
-      white-space: normal;
-      line-height: 1.3;
-      padding: 4px;
-    }
-    .std-buttons button:hover { border-color: #0078d4; color: #0078d4; }
-
-    /* 入力エリア */
-    .input-row { margin-bottom: 16px; }
-    .input-label-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .input-label-row label {
-      font-weight: 700;
-      color: #444;
-      font-size: 15px;
-    }
-    
-    .input-control-set {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .main-input-line { display: flex; gap: 8px; }
-    
-    input[type="number"] {
-      padding: 8px 12px;
-      font-size: 18px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 120px;
-      text-align: right;
       font-weight: bold;
-    }
-    input[type="number"]:focus {
-      outline: none;
-      border-color: #0078d4;
-      box-shadow: 0 0 0 3px rgba(0,120,212,0.1);
-    }
-
-    /* 増減ボタン群 */
-    .adjust-btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-    .adjust-btns button {
-      padding: 6px 0;
-      width: 42px;
-      font-size: 11px;
-      background: #fff;
-      border-color: #ddd;
       color: #555;
-    }
-    .adjust-btns button.btn-reset {
-      width: auto;
-      padding: 6px 10px;
-      color: #d63384;
-      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+      border-left: 4px solid #007bff;
+      padding-left: 8px;
     }
 
-    /* 桁数切り替えボタン */
-    .precision-ctrl {
-      display: flex;
-      gap: 2px;
-      margin-top: 8px;
-      justify-content: center;
-    }
-    .precision-ctrl span {
-      font-size: 12px;
-      line-height: 28px;
-      margin-right: 6px;
-      color: #666;
-    }
-    .precision-ctrl button {
-      padding: 2px 8px;
-      font-size: 12px;
-      min-height: 24px;
-      background: #fff;
-    }
-    .precision-ctrl button.active {
-      background: #666 !important;
-      border-color: #666 !important;
-      color: #fff;
-    }
-
-    /* 結果エリア */
+    /* 計算結果表示 (Sticky) */
     .result-box {
-      background: #e6f7ff;
-      border: 2px solid #bae7ff;
+      background: #212529;
+      color: #fff;
       padding: 16px;
       border-radius: 8px;
       text-align: center;
+      margin-bottom: 16px;
       position: sticky;
-      bottom: 16px;
-      box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
-      z-index: 10;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
-    .weight-display {
-      font-size: 28px;
+    .result-row {
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+        gap: 8px;
+    }
+    .result-val {
+      font-size: 36px;
       font-weight: bold;
-      color: #0050b3;
-      margin-bottom: 4px;
+      color: #ffd700;
+      line-height: 1;
     }
-    .calc-mode-badge {
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 8px;
-    }
-    .mode-exact { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
-    .mode-approx { background: #fffbe6; color: #d48806; border: 1px solid #ffe58f; }
-
+    .result-unit { font-size: 16px; color: #adb5bd; }
+    
     .add-btn {
-      background: #0078d4;
-      color: #fff;
-      border: none;
-      font-weight: bold;
-      padding: 12px;
+      margin-top: 10px;
       width: 100%;
-      font-size: 16px;
+      padding: 12px;
+      background: #28a745;
+      color: white;
+      border: none;
       border-radius: 6px;
-      box-shadow: 0 4px 6px rgba(0,120,212,0.2);
-      margin-top: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    .add-btn:active { box-shadow: none; transform: translateY(2px); }
+    .add-btn:active { background: #218838; transform: translateY(1px); }
 
-    /* テーブル */
-    .table-wrapper {
-      margin-top: 32px;
+    /* 小数点切替ボタン */
+    .prec-group {
+        display: inline-flex;
+        background: #495057;
+        border-radius: 4px;
+        padding: 2px;
+        margin-top: 8px;
+    }
+    .prec-btn {
+        background: transparent;
+        border: none;
+        color: #adb5bd;
+        font-size: 11px;
+        padding: 4px 8px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+    .prec-btn.active {
+        background: #ffd700;
+        color: #212529;
+        font-weight: bold;
+    }
+
+    /* リストテーブル */
+    .table-container {
       overflow-x: auto;
-      padding-bottom: 20px;
+      margin-top: 8px;
+      padding-bottom: 10px;
+      border: 1px solid #dee2e6;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
-      min-width: 600px;
+      min-width: 700px;
     }
     th {
-      background: #f8f9fa;
-      padding: 10px 8px;
+      background: #f1f3f5;
+      padding: 8px;
       text-align: left;
       font-weight: 600;
       border-bottom: 2px solid #ddd;
@@ -258,6 +133,7 @@
       padding: 8px;
       border-bottom: 1px solid #eee;
       vertical-align: middle;
+      color: #333;
     }
     td:hover { background: #fafafa; }
 
@@ -278,7 +154,10 @@
     .cell-copy-btn:active { background: #0078d4; color:#fff; }
 
     .qty-ctrl { display: flex; align-items: center; gap: 4px; }
-    .qty-ctrl button { padding: 2px 8px; height: 24px; line-height: 1; font-size: 14px; }
+    .qty-ctrl button { 
+      padding: 2px 8px; height: 24px; line-height: 1; font-size: 14px;
+      background: #fff; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;
+    }
     .qty-val { font-weight: bold; width: 24px; text-align: center; }
     
     .del-btn {
@@ -287,35 +166,113 @@
       background: #fff0f6;
       border: 1px solid #ffadd2;
       border-radius: 4px;
-      width: 28px; 
-      height: 28px;
-      padding: 0;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 28px; height: 28px;
+      padding: 0; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
     }
     .del-btn:hover { background: #ffadd2; color: #fff; }
 
-    /* 免責事項 */
-    .disclaimer {
-      margin-top: 40px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-top: 1px solid #ddd;
-      color: #6c757d;
-      font-size: 12px;
-      line-height: 1.6;
+    /* 形状選択ボタン */
+    .shape-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
     }
-    .disclaimer strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      color: #495057;
+    @media (max-width: 480px) {
+      .shape-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .shape-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px;
+      padding: 10px 4px; cursor: pointer; height: 90px;
+    }
+    .shape-btn:hover { background: #e2e6ea; }
+    .shape-btn.active {
+      background: #e7f1ff; border-color: #007bff; color: #0056b3;
+    }
+    .shape-icon { width: 40px; height: 40px; margin-bottom: 6px; fill: #adb5bd; }
+    .shape-btn.active .shape-icon { fill: #007bff; }
+    .shape-label { font-size: 12px; font-weight: bold; }
+
+    /* 材質ボタン */
+    .material-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mat-btn {
+      flex: 1; min-width: 80px; padding: 10px;
+      border: 1px solid #ced4da; background: #fff;
+      border-radius: 6px; font-size: 14px; font-weight: 500;
+      cursor: pointer; text-align: center;
+    }
+    .mat-btn.active { background: #6c757d; color: #fff; border-color: #6c757d; }
+
+    /* 規格選択ボタン */
+    .std-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+      gap: 8px; margin-bottom: 16px;
+    }
+    .std-grid button {
+      padding: 10px 4px; font-size: 12px;
+      background: #fff; border: 1px solid #dee2e6; border-radius: 6px;
+      cursor: pointer; font-weight: 500;
+    }
+    .std-grid button:hover { background: #f8f9fa; }
+    .std-grid button.active {
+      background: #cce5ff; border-color: #007bff;
+      color: #004085; font-weight: bold; border-width: 2px;
     }
 
-    .hidden { display: none !important; }
-    .text-sm { font-size: 12px; color: #666; }
+    /* 寸法入力エリア */
+    .input-row {
+      margin-bottom: 12px; padding: 8px;
+      background: #f8f9fa; border-radius: 6px;
+    }
+    .input-label-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .input-label-row label { font-size: 12px; font-weight: bold; color: #555; }
+    
+    .main-input-line { display: flex; align-items: center; width: 100%; }
+    .main-input-line input {
+      width: 100%; padding: 8px; font-size: 16px;
+      border: 1px solid #ced4da; border-radius: 4px; text-align: right;
+    }
+    
+    /* 青枠内の入力フィールド強調 */
+    .highlight-input input {
+      font-weight: bold; color: #007bff;
+    }
+
+    .adjust-btns {
+      display: flex; gap: 3px; justify-content: flex-end; margin-top: 4px; flex-wrap: wrap;
+    }
+    .adjust-btns button {
+      padding: 5px 0; width: 42px; font-size: 11px;
+      background: #fff; border: 1px solid #ced4da;
+      border-radius: 3px; cursor: pointer;
+    }
+    .adjust-btns button.btn-reset {
+      width: auto; padding: 5px 8px;
+      background: #fff3cd !important; border-color: #ffeeba !important; color: #856404;
+    }
+
+    /* 免責事項 */
+    .disclaimer {
+      margin-top: 40px; padding: 20px;
+      background: #f8f9fa; border-top: 1px solid #ddd;
+      color: #999; font-size: 11px; line-height: 1.6;
+    }
+
+    /* フッターメニュー */
+    .footer-menu {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #ddd;
+      display: flex; justify-content: space-around; padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05); z-index: 200;
+    }
+    .f-btn {
+      background: none; border: none; color: #666; font-size: 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+    }
+    .f-btn span { font-size: 18px; }
   </style>
 </head>
 <body>
@@ -323,130 +280,157 @@
 <div class="container">
   <h1>金属重量計算ツール</h1>
 
-  <div class="group-box">
-    <div class="section-title">1. 形状を選択</div>
-    <div class="btn-grid" id="shapeButtons">
-      <button data-shape="plate" class="active">平鋼<br><span class="text-sm">(フラットバー)</span></button>
-      <button data-shape="round">丸棒<br><span class="text-sm">(丸鋼)</span></button>
-      <button data-shape="pipe">丸パイプ<br><span class="text-sm">(鋼管)</span></button>
-      <button data-shape="square">角パイプ<br><span class="text-sm">(角形鋼管)</span></button>
-      <button data-shape="angle">Lアングル<br><span class="text-sm">(山形鋼)</span></button>
-      <button data-shape="channel">チャンネル<br><span class="text-sm">(溝形鋼)</span></button>
-      <button data-shape="ibeam">I形鋼<br><span class="text-sm">(Iビーム)</span></button>
-      <button data-shape="hbeam">H鋼<br><span class="text-sm">(H形鋼)</span></button>
-    </div>
-  </div>
-
-  <div class="group-box">
-    <div class="section-title">2. 材質を選択</div>
-    <div class="btn-grid" id="materialButtons" style="margin-bottom:12px;"></div>
-    <div class="input-control-set">
-      <label class="text-sm">比重 (g/cm³)</label>
-      <div class="main-input-line">
-        <input type="number" id="densityInput" step="0.01">
-      </div>
-      <div style="font-size:11px; color:#888;">※比重を変更すると材質は「その他」扱いになります</div>
-    </div>
-  </div>
-
-  <div class="group-box">
-    <div class="section-title">3. 寸法・規格</div>
-    
-    <div id="stdButtonsArea" class="std-buttons hidden"></div>
-    <div id="inputArea"></div>
-
-    <div class="input-row" style="margin-top:24px; padding-top:16px; border-top:2px dashed #eee;">
-      <div class="input-label-row">
-        <label>長さ L (mm)</label>
-      </div>
-      <div class="input-control-set">
-        <div class="main-input-line">
-          <input type="number" id="inputL" value="1000">
-        </div>
-        <div class="adjust-btns">
-          <button onclick="adjVal('inputL', -1000)">-1000</button>
-          <button onclick="adjVal('inputL', -100)">-100</button>
-          <button onclick="adjVal('inputL', -10)">-10</button>
-          <button onclick="adjVal('inputL', -1)">-1</button>
-          <button class="btn-reset" onclick="setVal('inputL', 1000)">Reset(1000)</button>
-          <button onclick="adjVal('inputL', 1)">+1</button>
-          <button onclick="adjVal('inputL', 10)">+10</button>
-          <button onclick="adjVal('inputL', 100)">+100</button>
-          <button onclick="adjVal('inputL', 1000)">+1000</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="result-box">
-    <div id="calcStatus" class="hidden"><span class="calc-mode-badge mode-approx">-</span></div>
-    <div class="weight-display">
-      <span id="weightVal">0.0</span> kg
+    <div class="result-row">
+      <span id="weightVal" class="result-val">0.0</span>
+      <span class="result-unit">kg</span>
+      <span id="calcStatus" style="font-size:10px; background:#444; padding:2px 4px; border-radius:3px;"></span>
     </div>
     
-    <div class="precision-ctrl">
-      <span>小数桁数:</span>
-      <button onclick="setPrecision(0)" id="precBtn0">0</button>
-      <button onclick="setPrecision(1)" id="precBtn1" class="active">1</button>
-      <button onclick="setPrecision(2)" id="precBtn2">2</button>
-      <button onclick="setPrecision(3)" id="precBtn3">3</button>
-    </div>
+    <button id="btnAdd" class="add-btn">＋ リストに追加</button>
 
-    <button class="add-btn" id="btnAdd">↓ リストに追加</button>
+    <div class="prec-group">
+      <button id="precBtn0" class="prec-btn" onclick="setPrecision(0)">1</button>
+      <button id="precBtn1" class="prec-btn active" onclick="setPrecision(1)">0.1</button>
+      <button id="precBtn2" class="prec-btn" onclick="setPrecision(2)">0.01</button>
+      <button id="precBtn3" class="prec-btn" onclick="setPrecision(3)">0.001</button>
+    </div>
   </div>
 
-  <div class="table-wrapper">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
-      <b style="font-size:16px;">材料リスト</b>
-      <button onclick="copyTableTSV()" style="padding:4px 8px; font-size:12px;">Excel用コピー</button>
+  <div class="group-box">
+    <span class="group-title">集計リスト</span>
+    <div class="table-container">
+      <table id="listTable">
+        <thead>
+          <tr>
+            <th style="width:30px">No</th>
+            <th>品名</th>
+            <th>材質</th>
+            <th>寸法</th>
+            <th>数量</th>
+            <th>単重</th>
+            <th>合計(kg)</th>
+            <th>削除</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <table id="listTable">
-      <thead>
-        <tr>
-          <th style="width:30px">No</th>
-          <th>品名</th>
-          <th>材質</th>
-          <th>寸法</th>
-          <th>数量</th>
-          <th>単重</th>
-          <th>合計(kg)</th>
-          <th>削除</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div style="text-align:right; margin-top:8px;">
+      <button onclick="copyTableTSV()" style="padding:4px 8px; background:#6c757d; color:#fff; border:none; border-radius:4px; font-size:11px;">Excel用コピー</button>
+    </div>
   </div>
 
+  <div class="group-box">
+    <span class="group-title">形状</span>
+    <div class="shape-grid" id="shapeButtons">
+      <button class="shape-btn active" data-shape="plate">
+        <svg class="shape-icon" viewBox="0 0 40 40"><rect x="5" y="12" width="30" height="16" rx="2" ry="2" /></svg>
+        <span class="shape-label">平鋼</span>
+      </button>
+      <button class="shape-btn" data-shape="round">
+        <svg class="shape-icon" viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" /></svg>
+        <span class="shape-label">丸棒</span>
+      </button>
+      <button class="shape-btn" data-shape="pipe">
+        <svg class="shape-icon" viewBox="0 0 40 40"><path d="M20 4 A16 16 0 1 0 20 36 A16 16 0 1 0 20 4 Z M20 12 A8 8 0 1 1 20 28 A8 8 0 1 1 20 12 Z" /></svg>
+        <span class="shape-label">パイプ</span>
+      </button>
+      <button class="shape-btn" data-shape="square">
+        <svg class="shape-icon" viewBox="0 0 40 40"><path d="M6 6 H34 V34 H6 Z M12 12 V28 H28 V12 Z" fill-rule="evenodd"/></svg>
+        <span class="shape-label">角パイプ</span>
+      </button>
+      <button class="shape-btn" data-shape="angle">
+        <svg class="shape-icon" viewBox="0 0 40 40"><polygon points="6,6 6,34 34,34 34,26 14,26 14,6" /></svg>
+        <span class="shape-label">アングル</span>
+      </button>
+      <button class="shape-btn" data-shape="channel">
+        <svg class="shape-icon" viewBox="0 0 40 40"><polygon points="32,6 10,6 10,34 32,34 32,26 18,26 18,14 32,14" /></svg>
+        <span class="shape-label">チャンネル</span>
+      </button>
+      <button class="shape-btn" data-shape="hbeam">
+        <svg class="shape-icon" viewBox="0 0 40 40"><polygon points="6,6 14,6 14,16 26,16 26,6 34,6 34,34 26,34 26,24 14,24 14,34 6,34" /></svg>
+        <span class="shape-label">H鋼</span>
+      </button>
+      <button class="shape-btn" data-shape="ibeam">
+        <svg class="shape-icon" viewBox="0 0 40 40"><polygon points="10,4 30,4 30,10 24,10 24,30 30,30 30,36 10,36 10,30 16,30 16,10 10,10" /></svg>
+        <span class="shape-label">I形鋼</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="group-box">
+    <span class="group-title">材質</span>
+    <div class="material-grid" id="materialButtons">
+      </div>
+    <div style="margin-top:8px; display:flex; align-items:center; gap:5px; font-size:12px;">
+      <label>比重:</label>
+      <input type="number" id="densityInput" step="0.01" style="width:60px; padding:4px; border:1px solid #ccc; border-radius:4px;">
+    </div>
+  </div>
+
+  <div class="group-box">
+    <span class="group-title">サイズ・長さ</span>
+    
+    <div id="stdButtonsArea" class="std-grid"></div>
+
+    <div class="input-row highlight-input" style="border: 2px solid #007bff; background:#e7f1ff; padding-bottom:12px;">
+      
+      <div id="blueBoxExtra"></div>
+
+      <div class="input-label-row"><label>長さ L (mm)</label></div>
+      <div class="main-input-line">
+        <input type="number" id="inputL" value="1000">
+      </div>
+      <div class="adjust-btns">
+        <button onclick="adjVal('inputL', -1000)">-1000</button>
+        <button onclick="adjVal('inputL', -100)">-100</button>
+        <button onclick="adjVal('inputL', -10)">-10</button>
+        <button onclick="adjVal('inputL', -1)">-1</button>
+        <button class="btn-reset" onclick="setVal('inputL', 1000)">Reset</button>
+        <button onclick="adjVal('inputL', 1)">+1</button>
+        <button onclick="adjVal('inputL', 10)">+10</button>
+        <button onclick="adjVal('inputL', 100)">+100</button>
+        <button onclick="adjVal('inputL', 1000)">+1000</button>
+      </div>
+    </div>
+
+    <details open>
+      <summary style="font-size:12px; color:#666; cursor:pointer; padding:8px 0;">詳細寸法を手動入力</summary>
+      <div id="inputArea" style="margin-top:8px;"></div>
+    </details>
+  </div>
+  
   <div class="disclaimer">
     <strong>【免責事項】</strong>
-    本ツールの計算結果は、入力された寸法と比重に基づく理論計算値（またはJIS規格の標準重量）を表示するものです。<br>
-    実際の製品重量とは、公差・コーナーRの有無・製造メーカーの仕様等により差異が生じる場合があります。<br>
-    設計・発注等の重要な業務においては、必ず各メーカーの公式カタログや実測値をご確認いただきますようお願いいたします。<br>
-    本ツールの利用によって生じたいかなる損害についても、当サイトは責任を負いかねますのでご了承ください。
+    本ツールの計算結果は概算であり、実際の製品重量とは差異が生じる場合があります。<br>
+    本ツールを利用した結果生じた損害について、作者は一切の責任を負いません。
   </div>
 
 </div>
 
-<script>
-/* ================= データ定義 ================= */
+<div class="footer-menu">
+  <button class="f-btn" onclick="window.scrollTo(0,0)"><span>🔝</span>Top</button>
+  <button class="f-btn" onclick="document.querySelector('.group-box:nth-of-type(3)').scrollIntoView({behavior:'smooth', block:'center'})"><span>🔷</span>形状</button>
+  <button class="f-btn" onclick="document.querySelector('.group-box:nth-of-type(5)').scrollIntoView({behavior:'smooth', block:'center'})"><span>📏</span>寸法</button>
+</div>
 
-const commonPipes = [ // SGP/STPG
+<script>
+/* ================= データ定義 (変更なし) ================= */
+const commonPipes = [
   {label:"15A (φ21.7 t2.8)", D:21.7, t:2.8}, {label:"20A (φ27.2 t2.8)", D:27.2, t:2.8},
   {label:"25A (φ34.0 t3.2)", D:34.0, t:3.2}, {label:"32A (φ42.7 t3.5)", D:42.7, t:3.5},
   {label:"40A (φ48.6 t3.5)", D:48.6, t:3.5}, {label:"50A (φ60.5 t3.8)", D:60.5, t:3.8},
   {label:"65A (φ76.3 t4.2)", D:76.3, t:4.2}, {label:"80A (φ89.1 t4.2)", D:89.1, t:4.2},
   {label:"100A (φ114.3 t4.5)", D:114.3, t:4.5}, {label:"単管 (φ48.6 t2.4)", D:48.6, t:2.4}
 ];
-
-const susPipes = [ // Sch10S相当
+const susPipes = [
   {label:"15A (φ21.7 t2.0)", D:21.7, t:2.0}, {label:"20A (φ27.2 t2.0)", D:27.2, t:2.0},
   {label:"25A (φ34.0 t3.0)", D:34.0, t:3.0}, {label:"32A (φ42.7 t3.0)", D:42.7, t:3.0},
   {label:"40A (φ48.6 t3.0)", D:48.6, t:3.0}, {label:"50A (φ60.5 t3.5)", D:60.5, t:3.5},
   {label:"65A (φ76.3 t3.5)", D:76.3, t:3.5}, {label:"80A (φ89.1 t4.0)", D:89.1, t:4.0},
   {label:"100A (φ114.3 t4.0)", D:114.3, t:4.0}
 ];
-
-// SS400の共通アングル
 const anglesSS = [
     {label:"30x30 t3", A:30, t:3, w:1.36},
     {label:"40x40 t3", A:40, t:3, w:1.83}, {label:"40x40 t5", A:40, t:5, w:2.95},
@@ -457,8 +441,6 @@ const anglesSS = [
     {label:"90x90 t7", A:90, t:7, w:9.59}, {label:"90x90 t10", A:90, t:10, w:13.3},
     {label:"100x100 t7", A:100, t:7, w:10.7}, {label:"100x100 t10", A:100, t:10, w:14.9}
 ];
-
-// SS400用チャンネル (JIS)
 const channelSS = [
     {label:"75x40 t5/7", H:75, B:40, t1:5, t2:7, w:6.92},
     {label:"100x50 t5/7.5", H:100, B:50, t1:5, t2:7.5, w:9.36},
@@ -474,8 +456,6 @@ const channelSS = [
     {label:"300x90 t10/15.5", H:300, B:90, t1:10, t2:15.5, w:43.8},
     {label:"380x100 t10.5/16", H:380, B:100, t1:10.5, t2:16, w:54.5}
 ];
-
-// I形鋼 (JIS G 3192) - 機械設計用に追加
 const ibeamSS = [
     {label:"100x75 t5/8", H:100, B:75, t1:5, t2:8, w:12.9},
     {label:"125x75 t5.5/9.5", H:125, B:75, t1:5.5, t2:9.5, w:16.1},
@@ -486,41 +466,29 @@ const ibeamSS = [
     {label:"200x150 t9/16", H:200, B:150, t1:9, t2:16, w:50.4},
     {label:"250x125 t7.5/12.5", H:250, B:125, t1:7.5, t2:12.5, w:38.3}
 ];
-
-// SS400用H鋼 (JIS) ★修正: CAD準拠（呼称寸法表記）
-// JIS G 3192 の表を網羅
 const hbeamSS = [
     {label:"100x100 (100x100) t6/8", H:100, B:100, t1:6, t2:8, w:17.2},
     {label:"125x60 (125x60) t6/8", H:125, B:60, t1:6, t2:8, w:13.2},
     {label:"125x125 (125x125) t6.5/9", H:125, B:125, t1:6.5, t2:9, w:23.8},
-    // 呼称150系
     {label:"150x75 (150x75) t5/7", H:150, B:75, t1:5, t2:7, w:14.0},
     {label:"150x100 (148x100) t6/9", H:148, B:100, t1:6, t2:9, w:21.1},
     {label:"150x150 (150x150) t7/10", H:150, B:150, t1:7, t2:10, w:31.5},
-    // 呼称175系
     {label:"175x90 (175x90) t5/8", H:175, B:90, t1:5, t2:8, w:18.1},
     {label:"175x175 (175x175) t7.5/11", H:175, B:175, t1:7.5, t2:11, w:40.2},
-    // 呼称200系
     {label:"200x100 (200x100) t5.5/8", H:200, B:100, t1:5.5, t2:8, w:21.3},
     {label:"200x150 (194x150) t6/9", H:194, B:150, t1:6, t2:9, w:29.9},
     {label:"200x200 (200x200) t8/12", H:200, B:200, t1:8, t2:12, w:49.9},
-    // 呼称250系
     {label:"250x125 (250x125) t6/9", H:250, B:125, t1:6, t2:9, w:29.6},
     {label:"250x175 (244x175) t7/11", H:244, B:175, t1:7, t2:11, w:44.1},
     {label:"250x250 (250x250) t9/14", H:250, B:250, t1:9, t2:14, w:72.4},
-    // 呼称300系
     {label:"300x150 (300x150) t6.5/9", H:300, B:150, t1:6.5, t2:9, w:36.7},
     {label:"300x200 (294x200) t8/12", H:294, B:200, t1:8, t2:12, w:56.8},
     {label:"300x300 (300x300) t10/15", H:300, B:300, t1:10, t2:15, w:94.0},
-    // 呼称350系
     {label:"350x175 (350x175) t7/11", H:350, B:175, t1:7, t2:11, w:49.6},
     {label:"350x250 (340x250) t9/14", H:340, B:250, t1:9, t2:14, w:79.7},
     {label:"350x350 (350x350) t12/19", H:350, B:350, t1:12, t2:19, w:137},
-    // 呼称400系
     {label:"400x200 (400x200) t8/13", H:400, B:200, t1:8, t2:13, w:66.0}
 ];
-
-// SUS用アングル
 const anglesSUS = [
     {label:"20x20 t3", A:20, t:3}, {label:"25x25 t3", A:25, t:3},
     {label:"30x30 t3", A:30, t:3}, {label:"40x40 t3", A:40, t:3},
@@ -529,7 +497,6 @@ const anglesSUS = [
     {label:"60x60 t4", A:60, t:4}, {label:"65x65 t6", A:65, t:6},
     {label:"75x75 t6", A:75, t:6}
 ];
-
 const channelSUS = [
     {label:"80x40 t5", H:80, B:40, t1:5, t2:5},
     {label:"100x50 t5", H:100, B:50, t1:5, t2:5},
@@ -538,7 +505,6 @@ const channelSUS = [
     {label:"150x75 t6", H:150, B:75, t1:6, t2:6},
     {label:"150x75 t9", H:150, B:75, t1:9, t2:9}
 ];
-
 const hbeamSUS = [
     {label:"100x100 t6/8", H:100, B:100, t1:6, t2:8},
     {label:"125x60 t6/8", H:125, B:60, t1:6, t2:8},
@@ -551,8 +517,6 @@ const hbeamSUS = [
     {label:"294x200 t8/12", H:294, B:200, t1:8, t2:12},
     {label:"300x150 t6.5/9", H:300, B:150, t1:6.5, t2:9}
 ];
-
-// アルミ用アングル
 const anglesAL = [
     {label:"10x10 t1.2", A:10, t:1.2}, {label:"15x15 t1.5", A:15, t:1.5},
     {label:"20x20 t1.5", A:20, t:1.5}, {label:"20x20 t2.0", A:20, t:2.0},
@@ -561,8 +525,6 @@ const anglesAL = [
     {label:"40x40 t2.0", A:40, t:2.0}, {label:"40x40 t3.0", A:40, t:3.0},
     {label:"50x50 t3.0", A:50, t:3.0}, {label:"50x50 t4.0", A:50, t:4.0}
 ];
-
-// アルミ用チャンネル
 const channelAL = [
     {label:"10x10 t1.5", H:10, B:10, t1:1.5, t2:1.5},
     {label:"15x15 t1.5", H:15, B:15, t1:1.5, t2:1.5},
@@ -580,84 +542,43 @@ const materials = {
     plates: [1.6, 2.3, 3.2, 4.5, 6, 9, 12, 16, 19, 22, 25, 28, 32, 38, 45, 50],
     rounds: [9, 13, 16, 19, 22, 25, 28, 32, 38, 50, 60, 65, 70, 75, 80, 90, 100],
     pipes: commonPipes,
-    squares: [ // STKR
+    squares: [ 
       {label:"50x50 t2.3", A:50, t:2.3, w:3.34}, {label:"50x50 t3.2", A:50, t:3.2, w:4.50},
       {label:"60x60 t2.3", A:60, t:2.3, w:4.06}, {label:"60x60 t3.2", A:60, t:3.2, w:5.50},
       {label:"75x75 t3.2", A:75, t:3.2, w:7.01}, {label:"100x100 t3.2", A:100, t:3.2, w:9.52},
       {label:"100x100 t4.5", A:100, t:4.5, w:13.1}, {label:"125x125 t4.5", A:125, t:4.5, w:16.6}
     ],
-    angle: anglesSS,
-    channel: channelSS,
-    ibeam: ibeamSS,
-    hbeam: hbeamSS,
-    defaults: { 
-      plate:[6,100], round:[25], pipe:[48.6, 2.3], square:[50, 2.3], 
-      angle:[50,50,6], channel:[100,50,5,7.5], ibeam:[100,75,5,8], hbeam:[100,100,6,8]
-    }
+    angle: anglesSS, channel: channelSS, ibeam: ibeamSS, hbeam: hbeamSS,
+    defaults: { plate:[6,100], round:[25], pipe:[48.6, 2.3], square:[50, 2.3], angle:[50,50,6], channel:[100,50,5,7.5], ibeam:[100,75,5,8], hbeam:[100,100,6,8] }
   },
   SUS304: { 
     label: "SUS304", density: 7.93, 
     plates: [0.8, 1.0, 1.2, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0, 10, 12, 16, 20],
     rounds: [3, 4, 5, 6, 8, 10, 12, 13, 16, 20, 25, 30, 40, 50, 60],
     pipes: susPipes,
-    squares: [ 
-      {label:"25x25 t1.5", A:25, t:1.5}, {label:"30x30 t1.5", A:30, t:1.5},
-      {label:"40x40 t2.0", A:40, t:2.0}, {label:"50x50 t2.0", A:50, t:2.0},
-      {label:"60x60 t3.0", A:60, t:3.0}
-    ],
-    angle: anglesSUS,
-    channel: channelSUS,
-    ibeam: [], // SUS Iビームは規格品少ないため空
-    hbeam: hbeamSUS, 
-    defaults: { 
-      plate:[3.0,100], round:[10], pipe:[34.0, 3.0], square:[30, 1.5], 
-      angle:[30, 30, 3], channel:[80,40,5,5], hbeam:[100,100,6,8] 
-    } 
+    squares: [ {label:"25x25 t1.5", A:25, t:1.5}, {label:"30x30 t1.5", A:30, t:1.5}, {label:"40x40 t2.0", A:40, t:2.0}, {label:"50x50 t2.0", A:50, t:2.0}, {label:"60x60 t3.0", A:60, t:3.0} ],
+    angle: anglesSUS, channel: channelSUS, ibeam: [], hbeam: hbeamSUS, 
+    defaults: { plate:[3.0,100], round:[10], pipe:[34.0, 3.0], square:[30, 1.5], angle:[30, 30, 3], channel:[80,40,5,5], hbeam:[100,100,6,8] } 
   },
-  AL:     { 
+  AL: { 
     label: "アルミ", density: 2.70, 
     plates: [0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10, 12, 15],
     rounds: [8, 10, 12, 15, 20, 25, 30, 40, 50, 60],
-    pipes: [ 
-      {label:"φ20 t2.0", D:20, t:2.0}, {label:"φ25 t2.0", D:25, t:2.0},
-      {label:"φ30 t2.0", D:30, t:2.0}, {label:"φ50 t3.0", D:50, t:3.0}
-    ],
-    squares: [ 
-      {label:"20x20 t2.0", A:20, t:2.0}, {label:"30x30 t2.0", A:30, t:2.0},
-      {label:"50x50 t2.0", A:50, t:2.0}, {label:"50x50 t3.0", A:50, t:3.0}
-    ],
-    angle: anglesAL,
-    channel: channelAL, 
-    ibeam: [],
-    hbeam: [], 
-    defaults: { 
-      plate:[2.0,100], round:[20], pipe:[25, 2.0], square:[30, 2.0], 
-      angle:[30, 30, 2.0], channel:[30,30,2,2] 
-    }
+    pipes: [ {label:"φ20 t2.0", D:20, t:2.0}, {label:"φ25 t2.0", D:25, t:2.0}, {label:"φ30 t2.0", D:30, t:2.0}, {label:"φ50 t3.0", D:50, t:3.0} ],
+    squares: [ {label:"20x20 t2.0", A:20, t:2.0}, {label:"30x30 t2.0", A:30, t:2.0}, {label:"50x50 t2.0", A:50, t:2.0}, {label:"50x50 t3.0", A:50, t:3.0} ],
+    angle: anglesAL, channel: channelAL, ibeam: [], hbeam: [], 
+    defaults: { plate:[2.0,100], round:[20], pipe:[25, 2.0], square:[30, 2.0], angle:[30, 30, 2.0], channel:[30,30,2,2] }
   },
-  CU:     { 
+  CU: { 
     label: "銅", density: 8.89, 
     plates: [0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10],
     rounds: [5, 10, 15, 20, 25, 30, 40, 50],
-    pipes: [ 
-      {label:"6.35(1/4)", D:6.35, t:0.8}, {label:"9.52(3/8)", D:9.52, t:0.8},
-      {label:"12.7(1/2)", D:12.7, t:0.8}, {label:"15.88(5/8)", D:15.88, t:1.0},
-      {label:"19.05(3/4)", D:19.05, t:1.2}
-    ],
-    squares: [],
-    angle: [], 
-    channel: [], 
-    ibeam: [],
-    hbeam: [],
-    defaults: { pipe:[15.88, 1.0] }
+    pipes: [ {label:"6.35(1/4)", D:6.35, t:0.8}, {label:"9.52(3/8)", D:9.52, t:0.8}, {label:"12.7(1/2)", D:12.7, t:0.8}, {label:"15.88(5/8)", D:15.88, t:1.0}, {label:"19.05(3/4)", D:19.05, t:1.2} ],
+    squares: [], angle: [], channel: [], ibeam: [], hbeam: [], defaults: { pipe:[15.88, 1.0] }
   },
-  CUSTOM: { 
-    label: "その他", density: 7.85, 
-    plates: null, rounds: null, pipes:null, squares:null, angle:null, channel:null, ibeam:null, hbeam:null 
-  } 
+  CUSTOM: { label: "その他", density: 7.85, defaults: null } 
 };
 
-// グローバルデフォルト
 const defaults = {
   plate:   { v1:6, v2:100, L:1000 },
   round:   { v1:25, L:1000 }, 
@@ -670,12 +591,8 @@ const defaults = {
 };
 
 let state = {
-  shape: 'plate',
-  mat: 'SS400',
-  listCount: 0,
-  isExact: false,
-  matchedWeight: null,
-  precision: 1 
+  shape: 'plate', mat: 'SS400', listCount: 0,
+  isExact: false, matchedWeight: null, precision: 1 
 };
 
 /* ================= 初期化 ================= */
@@ -683,27 +600,24 @@ window.onload = function() {
   const matArea = document.getElementById('materialButtons');
   Object.keys(materials).forEach(k => {
     const b = document.createElement('button');
-    b.textContent = materials[k].label;
-    b.onclick = () => setMaterial(k);
-    b.dataset.mat = k;
+    b.textContent = materials[k].label; b.className = 'mat-btn';
+    b.onclick = () => setMaterial(k); b.dataset.mat = k;
     matArea.appendChild(b);
   });
   
-  document.querySelectorAll('#shapeButtons button').forEach(b => {
+  document.querySelectorAll('.shape-btn').forEach(b => {
     b.onclick = () => setShape(b.dataset.shape);
   });
 
-  document.getElementById('btnAdd').onclick = addToList;
+  document.getElementById('btnAdd').onclick = () => addToList(false);
+
   document.getElementById('inputL').addEventListener('input', calc);
   
   const denInput = document.getElementById('densityInput');
   denInput.addEventListener('input', () => {
     const val = parseFloat(denInput.value);
-    const currentMatDef = materials[state.mat];
-    if (state.mat !== 'CUSTOM' && val !== currentMatDef.density) {
-      state.mat = 'CUSTOM';
-      updateMatButtons();
-      rebuildUIKeepValues();
+    if (state.mat !== 'CUSTOM' && val !== materials[state.mat].density) {
+      state.mat = 'CUSTOM'; updateMatButtons(); rebuildUIKeepValues();
     }
     calc();
   });
@@ -713,40 +627,31 @@ window.onload = function() {
 };
 
 function rebuildUIKeepValues() {
-  if (['plate','round','pipe','square','angle','channel','ibeam','hbeam'].includes(state.shape)) {
-    const v1 = document.getElementById('val1') ? document.getElementById('val1').value : null;
-    const v2 = document.getElementById('val2') ? document.getElementById('val2').value : null;
-    const v3 = document.getElementById('val3') ? document.getElementById('val3').value : null;
-    const v4 = document.getElementById('val4') ? document.getElementById('val4').value : null;
-    
-    buildUI(state.shape);
-    
-    if(v1 && document.getElementById('val1')) document.getElementById('val1').value = v1;
-    if(v2 && document.getElementById('val2')) document.getElementById('val2').value = v2;
-    if(v3 && document.getElementById('val3')) document.getElementById('val3').value = v3;
-    if(v4 && document.getElementById('val4')) document.getElementById('val4').value = v4;
-  }
+  const v1=document.getElementById('val1')?.value;
+  const v2=document.getElementById('val2')?.value;
+  const v3=document.getElementById('val3')?.value;
+  const v4=document.getElementById('val4')?.value;
+  buildUI(state.shape);
+  if(v1 && document.getElementById('val1')) document.getElementById('val1').value=v1;
+  if(v2 && document.getElementById('val2')) document.getElementById('val2').value=v2;
+  if(v3 && document.getElementById('val3')) document.getElementById('val3').value=v3;
+  if(v4 && document.getElementById('val4')) document.getElementById('val4').value=v4;
 }
 
-/* ================= ロジック ================= */
 function setMaterial(k) {
   state.mat = k;
   document.getElementById('densityInput').value = materials[k].density;
   updateMatButtons();
   buildUI(state.shape);
-  
-  if(k !== 'CUSTOM') {
-     const defs = materials[k].defaults;
-     if (defs && defs[state.shape]) {
-       const d = defs[state.shape];
-       if(document.getElementById('val1')) document.getElementById('val1').value = d[0];
-       if(document.getElementById('val2') && d.length>1) document.getElementById('val2').value = d[1];
-       if(document.getElementById('val3') && d.length>2) document.getElementById('val3').value = d[2];
-       if(document.getElementById('val4') && d.length>3) document.getElementById('val4').value = d[3];
-     }
+  const defs = materials[k].defaults;
+  if(k!=='CUSTOM' && defs && defs[state.shape]) {
+    const d = defs[state.shape];
+    if(document.getElementById('val1')) document.getElementById('val1').value = d[0];
+    if(document.getElementById('val2') && d.length>1) document.getElementById('val2').value = d[1];
+    if(document.getElementById('val3') && d.length>2) document.getElementById('val3').value = d[2];
+    if(document.getElementById('val4') && d.length>3) document.getElementById('val4').value = d[3];
   }
-  checkStandardMatch();
-  calc();
+  checkStandardMatch(); calc();
 }
 
 function updateMatButtons() {
@@ -757,14 +662,11 @@ function updateMatButtons() {
 
 function setShape(s) {
   state.shape = s;
-  document.querySelectorAll('#shapeButtons button').forEach(b => {
-    b.classList.toggle('active', b.dataset.shape === s);
-  });
+  document.querySelectorAll('.shape-btn').forEach(b => b.classList.toggle('active', b.dataset.shape === s));
   buildUI(s);
   
   const matDefs = materials[state.mat].defaults;
   const globalDefs = defaults[s];
-
   if (matDefs && matDefs[s]) {
     const md = matDefs[s];
     if(document.getElementById('val1')) document.getElementById('val1').value = md[0];
@@ -772,112 +674,95 @@ function setShape(s) {
     if(document.getElementById('val3') && md.length>2) document.getElementById('val3').value = md[2];
     if(document.getElementById('val4') && md.length>3) document.getElementById('val4').value = md[3];
     document.getElementById('inputL').value = globalDefs ? globalDefs.L : 1000;
-  } else if (globalDefs) {
-    if(globalDefs.v1 && document.getElementById('val1')) document.getElementById('val1').value = globalDefs.v1;
-    if(globalDefs.v2 && document.getElementById('val2')) document.getElementById('val2').value = globalDefs.v2;
-    if(globalDefs.v3 && document.getElementById('val3')) document.getElementById('val3').value = globalDefs.v3;
-    if(globalDefs.v4 && document.getElementById('val4')) document.getElementById('val4').value = globalDefs.v4;
-    document.getElementById('inputL').value = globalDefs.L;
   }
-  
-  checkStandardMatch();
-  calc();
+  checkStandardMatch(); calc();
 }
 
 function buildUI(shape) {
   const inputArea = document.getElementById('inputArea');
+  const blueBoxExtra = document.getElementById('blueBoxExtra');
   const stdArea = document.getElementById('stdButtonsArea');
   
   inputArea.innerHTML = '';
+  blueBoxExtra.innerHTML = ''; // 青枠内の拡張エリアをクリア
   stdArea.innerHTML = '';
-  stdArea.classList.remove('hidden');
 
-  const mkInput = (id, label, defaultVal, hasAdjust=true, wideRange=false, customAdjust=null) => {
+  // 入力フィールド作成用関数
+  // target: 挿入先のDOM要素
+  // id, label, val: 基本情報
+  // isSmallDim: trueなら±100,±1000ボタンを生成しない
+  const mkInput = (target, id, label, defaultVal, isSmallDim=false) => {
     const div = document.createElement('div');
-    div.className = 'input-row';
-    let btnsHtml = '';
     
-    if (customAdjust) {
-      let inner = '';
-      customAdjust.forEach(v => {
-        if (v === 'reset') {
-          inner += `<button class="btn-reset" onclick="setVal('${id}', ${defaultVal})">Reset</button>`;
-        } else {
-          const sign = v > 0 ? '+' : '';
-          inner += `<button onclick="adjVal('${id}', ${v})">${sign}${v}</button>`;
-        }
-      });
-      btnsHtml = `<div class="adjust-btns">${inner}</div>`;
+    // 青枠内に追加する場合はスタイルを調整
+    if(target === blueBoxExtra) {
+        div.style.marginBottom = "12px";
+    } else {
+        div.className = 'input-row';
+    }
 
-    } else if(hasAdjust) {
-      const btn1000Minus = wideRange ? `<button onclick="adjVal('${id}', -1000)">-1000</button>` : '';
-      const btn1000Plus  = wideRange ? `<button onclick="adjVal('${id}', 1000)">+1000</button>` : '';
-      const resetLabel = wideRange ? `Reset(${defaultVal})` : 'Reset';
-
-      btnsHtml = `
-        <div class="adjust-btns">
-          ${btn1000Minus}
-          <button onclick="adjVal('${id}', -100)">-100</button>
-          <button onclick="adjVal('${id}', -10)">-10</button>
-          <button onclick="adjVal('${id}', -1)">-1</button>
-          <button class="btn-reset" onclick="setVal('${id}', ${defaultVal})">${resetLabel}</button>
-          <button onclick="adjVal('${id}', 1)">+1</button>
-          <button onclick="adjVal('${id}', 10)">+10</button>
-          <button onclick="adjVal('${id}', 100)">+100</button>
-          ${btn1000Plus}
-        </div>
-      `;
+    let btnsHtml = '';
+    if (isSmallDim) {
+        // 小さい寸法用（板厚など）：大きなマイナスボタンを排除
+        btnsHtml = `
+            <div class="adjust-btns">
+                <button onclick="adjVal('${id}', -10)">-10</button>
+                <button onclick="adjVal('${id}', -1)">-1</button>
+                <button class="btn-reset" onclick="setVal('${id}', ${defaultVal})">Reset</button>
+                <button onclick="adjVal('${id}', 1)">+1</button>
+                <button onclick="adjVal('${id}', 10)">+10</button>
+            </div>
+        `;
+    } else {
+        // 通常寸法用：フルセット
+        btnsHtml = `
+            <div class="adjust-btns">
+                <button onclick="adjVal('${id}', -100)">-100</button>
+                <button onclick="adjVal('${id}', -10)">-10</button>
+                <button onclick="adjVal('${id}', -1)">-1</button>
+                <button class="btn-reset" onclick="setVal('${id}', ${defaultVal})">Reset</button>
+                <button onclick="adjVal('${id}', 1)">+1</button>
+                <button onclick="adjVal('${id}', 10)">+10</button>
+                <button onclick="adjVal('${id}', 100)">+100</button>
+            </div>
+        `;
     }
 
     div.innerHTML = `
       <div class="input-label-row"><label>${label}</label></div>
-      <div class="input-control-set">
-        <div class="main-input-line">
-          <input type="number" id="${id}" step="0.1" value="${defaultVal}">
-        </div>
-        ${btnsHtml}
-      </div>
-    `;
-    inputArea.appendChild(div);
-    document.getElementById(id).addEventListener('input', () => {
-      checkStandardMatch();
-      calc();
-    });
+      <div class="main-input-line"><input type="number" id="${id}" step="0.1" value="${defaultVal}"></div>
+      ${btnsHtml}`;
+      
+    target.appendChild(div);
+    document.getElementById(id).addEventListener('input', () => { checkStandardMatch(); calc(); });
   };
 
-  const isCustom = (state.mat === 'CUSTOM');
-
   if(shape === 'plate') {
-    if (isCustom) {
-      mkInput('val1', '板厚 t (mm)', 6, true, false, [-10, -1, -0.1, 'reset', 0.1, 1, 10]);
-    } else {
-      mkInput('val1', '板厚 t (mm)', 6, false); 
-    }
-    mkInput('val2', '幅 W (mm)', 100, true, true);
-    
+    // 平鋼：板厚は詳細へ(小)、幅は青枠へ(大)
+    mkInput(inputArea, 'val1', '板厚 t (mm)', 6, true); // true = 小さい寸法モード
+    mkInput(blueBoxExtra, 'val2', '幅 W (mm)', 100, false);
   } else if(shape === 'round') {
-    mkInput('val1', '直径 φ (mm)', 25, true, false, [-100, -10, -1, 'reset', 1, 10, 100]);
-    
+    mkInput(inputArea, 'val1', '直径 φ (mm)', 25, false);
   } else if(shape === 'pipe') {
-    mkInput('val1', '外径 D (mm)', 48.6, false);
-    mkInput('val2', '肉厚 t (mm)', 2.3, false);
+    mkInput(inputArea, 'val1', '外径 D (mm)', 48.6, false); 
+    mkInput(inputArea, 'val2', '肉厚 t (mm)', 2.3, true);
   } else if(shape === 'square') {
-    mkInput('val1', '辺 A (mm)', 50, true);
-    mkInput('val2', '肉厚 t (mm)', 2.3, false);
+    mkInput(inputArea, 'val1', '辺 A (mm)', 50, false); 
+    mkInput(inputArea, 'val2', '肉厚 t (mm)', 2.3, true);
   } else if(shape === 'angle') {
-    mkInput('val1', '辺 A (mm)', 50, true);
-    mkInput('val2', '辺 B (mm)', 50, true);
-    mkInput('val3', '厚み t (mm)', 6, false);
-  } else if(shape === 'channel' || shape === 'ibeam' || shape === 'hbeam') {
-    mkInput('val1', '高さ H (mm)', 100, true);
-    mkInput('val2', '幅 B (mm)', 50, true);
-    mkInput('val3', 'ウェブ t1 (mm)', 5, false);
-    mkInput('val4', 'フランジ t2 (mm)', 7, false);
+    mkInput(inputArea, 'val1', '辺 A (mm)', 50, false); 
+    mkInput(inputArea, 'val2', '辺 B (mm)', 50, false); 
+    mkInput(inputArea, 'val3', '厚み t (mm)', 6, true);
+  } else if(['channel','ibeam','hbeam'].includes(shape)) {
+    mkInput(inputArea, 'val1', '高さ H (mm)', 100, false); 
+    mkInput(inputArea, 'val2', '幅 B (mm)', 50, false);
+    mkInput(inputArea, 'val3', 'ウェブ t1 (mm)', 5, true); 
+    mkInput(inputArea, 'val4', 'フランジ t2 (mm)', 7, true);
   }
 
+  // 規格ボタン作成
   let stdData = null;
   const matDef = materials[state.mat];
-
   if (matDef) {
     if (shape === 'plate') stdData = matDef.plates;
     else if (shape === 'round') stdData = matDef.rounds;
@@ -889,40 +774,35 @@ function buildUI(shape) {
     else if (shape === 'hbeam') stdData = matDef.hbeam;
   }
 
-  if(!stdData || stdData.length === 0) {
-    stdArea.classList.add('hidden');
-    return;
+  if(stdData && stdData.length > 0) {
+    stdArea.classList.remove('hidden');
+    stdData.forEach(d => {
+      const b = document.createElement('button');
+      if(typeof d === 'number') {
+        b.textContent = (shape==='plate') ? `t${d}` : `φ${d}`;
+        b.dataset.vals = JSON.stringify([d]);
+      } else {
+        b.textContent = d.label;
+        let vals = [];
+        if(shape==='pipe') vals = [d.D, d.t];
+        else if(shape==='square') vals = [d.A, d.t];
+        else if(shape==='angle') vals = [d.A, (d.A), d.t]; 
+        else if(['channel','ibeam','hbeam'].includes(shape)) vals = [d.H, d.B, d.t1, d.t2];
+        b.dataset.vals = JSON.stringify(vals);
+        if(d.w) b.dataset.weight = d.w;
+      }
+      b.onclick = () => {
+        const v = JSON.parse(b.dataset.vals);
+        ['val1','val2','val3','val4'].forEach((id, i) => {
+          if(document.getElementById(id) && v[i] !== undefined) document.getElementById(id).value = v[i];
+        });
+        checkStandardMatch(); calc();
+      };
+      stdArea.appendChild(b);
+    });
+  } else {
+    stdArea.innerHTML = '<div style="font-size:12px; color:#999; text-align:center; grid-column:1/-1;">規格設定なし</div>';
   }
-
-  stdData.forEach(d => {
-    const b = document.createElement('button');
-    if(typeof d === 'number') {
-      b.textContent = (shape==='plate') ? `t${d}` : `φ${d}`;
-      b.dataset.vals = JSON.stringify([d]);
-    } else {
-      b.textContent = d.label;
-      let vals = [];
-      if(shape==='pipe') vals = [d.D, d.t];
-      if(shape==='square') vals = [d.A, d.t];
-      if(shape==='angle') vals = [d.A, (d.A), d.t]; 
-      if(shape==='channel' || shape==='ibeam' || shape==='hbeam') vals = [d.H, d.B, d.t1, d.t2];
-      
-      b.dataset.vals = JSON.stringify(vals);
-      if(d.w) b.dataset.weight = d.w;
-    }
-
-    b.onclick = () => {
-      const v = JSON.parse(b.dataset.vals);
-      ['val1','val2','val3','val4'].forEach((id, i) => {
-        if(document.getElementById(id) && v[i] !== undefined) {
-          document.getElementById(id).value = v[i];
-        }
-      });
-      checkStandardMatch();
-      calc();
-    };
-    stdArea.appendChild(b);
-  });
 }
 
 /* ================= 計算・アクション ================= */
@@ -930,33 +810,23 @@ window.adjVal = function(id, delta) {
   const el = document.getElementById(id);
   if(!el) return;
   let v = parseFloat(el.value) || 0;
-  v += delta;
-  if(v < 0) v = 0;
+  v += delta; if(v < 0) v = 0;
   el.value = parseFloat(v.toFixed(2));
-  checkStandardMatch();
-  calc();
+  checkStandardMatch(); calc();
 };
-
 window.setVal = function(id, val) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.value = val;
-  checkStandardMatch();
-  calc();
+  const el = document.getElementById(id); if(el) { el.value=val; checkStandardMatch(); calc(); }
 };
 
 function checkStandardMatch() {
-  const stdArea = document.getElementById('stdButtonsArea');
-  if(stdArea.classList.contains('hidden')) return;
-
   let current = [];
   ['val1','val2','val3','val4'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) current.push(parseFloat(el.value));
+    const el = document.getElementById(id); if(el) current.push(parseFloat(el.value));
   });
-
   state.matchedWeight = null;
+  const stdArea = document.getElementById('stdButtonsArea');
   Array.from(stdArea.children).forEach(btn => {
+    if(!btn.dataset.vals) return;
     const stdVals = JSON.parse(btn.dataset.vals);
     const isMatch = stdVals.every((v, i) => Math.abs(v - current[i]) < 0.01);
     if(isMatch) {
@@ -972,21 +842,16 @@ function calc() {
   const L = parseFloat(document.getElementById('inputL').value) || 0;
   const rho = parseFloat(document.getElementById('densityInput').value) || 0;
   const shape = state.shape;
-  
-  const v1 = parseFloat(document.getElementById('val1')?.value) || 0;
-  const v2 = parseFloat(document.getElementById('val2')?.value) || 0;
-  const v3 = parseFloat(document.getElementById('val3')?.value) || 0;
-  const v4 = parseFloat(document.getElementById('val4')?.value) || 0;
+  const v1 = parseFloat(document.getElementById('val1')?.value)||0;
+  const v2 = parseFloat(document.getElementById('val2')?.value)||0;
+  const v3 = parseFloat(document.getElementById('val3')?.value)||0;
+  const v4 = parseFloat(document.getElementById('val4')?.value)||0;
 
-  let unitWeight = 0; 
-  let isExact = false;
-  
+  let unitWeight = 0; let isExact = false;
   const showBadge = ['angle','channel','ibeam','hbeam'].includes(shape) || (shape==='square' && state.mat==='SS400');
-  const statusEl = document.getElementById('calcStatus');
-
+  
   if(state.matchedWeight && state.mat === 'SS400' && showBadge) {
-    unitWeight = state.matchedWeight;
-    isExact = true;
+    unitWeight = state.matchedWeight; isExact = true;
   } else {
     let area = 0; 
     if(shape === 'plate') area = v1 * v2;
@@ -994,24 +859,20 @@ function calc() {
     else if(shape === 'pipe') { if(v2>0 && v2<v1/2) area = Math.PI*((v1/2)**2 - (v1/2-v2)**2); }
     else if(shape === 'square') { if(v2>0 && v2<v1/2) area = v1**2 - (v1-2*v2)**2; }
     else if(shape === 'angle') { if(v3>0) area = (v1+v2-v3)*v3; }
-    else if(shape === 'channel') { 
-      if(v3>0 && v4>0) area = (v1*v3) + 2*(v2-v3)*v4; 
-    }
-    else if(shape === 'ibeam' || shape === 'hbeam') { 
-      if(v3>0 && v4>0) area = (v1-2*v4)*v3 + 2*v2*v4; 
-    }
+    else if(shape === 'channel' && v3>0 && v4>0) area = (v1*v3) + 2*(v2-v3)*v4; 
+    else if((shape === 'ibeam'||shape==='hbeam') && v3>0 && v4>0) area = (v1-2*v4)*v3 + 2*v2*v4; 
     unitWeight = (area * rho) / 1000;
   }
 
   const totalW = unitWeight * (L / 1000);
   document.getElementById('weightVal').textContent = totalW.toFixed(state.precision);
   
-  if (!showBadge) {
-    statusEl.classList.add('hidden');
-  } else {
-    statusEl.classList.remove('hidden');
-    if(isExact) statusEl.innerHTML = '<span class="calc-mode-badge mode-exact">JIS規格値 (R考慮)</span>';
-    else statusEl.innerHTML = '<span class="calc-mode-badge mode-approx">寸法計算値 (概算)</span>';
+  const statusEl = document.getElementById('calcStatus');
+  if (!showBadge) { statusEl.style.display='none'; } else {
+    statusEl.style.display='inline';
+    statusEl.textContent = isExact ? 'JIS' : '概算';
+    statusEl.style.background = isExact ? '#28a745' : '#ffc107';
+    statusEl.style.color = isExact ? '#fff' : '#000';
   }
   
   state.currentTotal = totalW; 
@@ -1032,15 +893,13 @@ function getDimString(s, v1, v2, v3, v4) {
 
 window.setPrecision = function(n) {
   state.precision = n;
-  for(let i=0; i<=3; i++) {
-    const btn = document.getElementById('precBtn'+i);
-    if(i===n) btn.classList.add('active');
-    else btn.classList.remove('active');
-  }
-  calc();
+  for(let i=0; i<=3; i++) document.getElementById('precBtn'+i).classList.toggle('active', i===n);
+  calc(); addToList(true); 
 };
 
-function addToList() {
+function addToList(isUpdateOnly=false) {
+  if(isUpdateOnly === true) return;
+  
   const w = parseFloat(state.currentTotal);
   if(w <= 0) return;
 
@@ -1048,16 +907,10 @@ function addToList() {
   const tbody = document.querySelector('#listTable tbody');
   const tr = document.createElement('tr');
   
-  const shapeNames = {
-    plate:'平鋼', round:'丸棒', pipe:'丸パイプ', square:'角パイプ',
-    angle:'アングル', channel:'チャンネル', ibeam:'I形鋼', hbeam:'H鋼'
-  };
+  const shapeNames = { plate:'平鋼', round:'丸棒', pipe:'丸パイプ', square:'角パイプ', angle:'アングル', channel:'チャンネル', ibeam:'I形鋼', hbeam:'H鋼' };
   const matName = materials[state.mat].label.split(' ')[0]; 
-  const unitW = parseFloat(state.currentTotal); 
   const inputL = document.getElementById('inputL').value;
-
-  tr.dataset.unitWeight = unitW;
-
+  
   let dimDisplay = "";
   if (state.shape === 'plate') {
     dimDisplay = `${state.currentDim}x${inputL}`;
@@ -1065,7 +918,7 @@ function addToList() {
     dimDisplay = `${state.currentDim} L=${inputL}`;
   }
 
-  const fixedW = unitW.toFixed(state.precision);
+  tr.dataset.unitWeight = w; 
 
   tr.innerHTML = `
     <td>${state.listCount}</td>
@@ -1079,10 +932,11 @@ function addToList() {
         <button onclick="updateQty(this, 1)">+</button>
       </div>
     </td>
-    <td class="c-val">${fixedW}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
-    <td class="c-val total-cell" style="font-weight:bold">${fixedW}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
+    <td class="c-val">${w.toFixed(state.precision)}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
+    <td class="c-val total-cell" style="font-weight:bold">${w.toFixed(state.precision)}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
     <td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>
   `;
+  
   tbody.appendChild(tr);
 }
 
@@ -1123,9 +977,6 @@ window.copyTableTSV = function() {
   });
   navigator.clipboard.writeText(txt).then(()=>alert('コピーしました'));
 };
-
 </script>
 </body>
-
 </html>
-
