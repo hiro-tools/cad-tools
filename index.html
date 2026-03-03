@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta name="google-site-verification" content="JuYTKJ8CQM4MIwDZiYZs_S9xxeJj1xj639gXIE7N7i0" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>金属重量計算ツール | 現場で使えるWebアプリ</title>
-<meta name="description" content="ステンレス(SUS)、鉄(SS)、アルミなどの金属重量をスマホで簡単に計算できる無料ツールです。板、丸棒、パイプなどの形状を選んで数値を入力するだけ。">
+<meta name="description" content="平鋼・丸棒・パイプなどの鋼材重量を無料で即時計算。部品表作成や材料見積りに便利。リスト集計とExcel用コピー、比重の手入力にも対応。">
   <style>
     /* ===== 基本スタイル (v20ベース) ===== */
     body {
@@ -275,6 +274,60 @@
       background: #fff3cd !important; border-color: #ffeeba !important; color: #856404;
     }
 
+
+    /* SEO blocks */
+    .seo-lead {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .seo-howto {
+      margin: 0 0 16px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+    }
+    .seo-mini-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .seo-howto ol {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .seo-block {
+      margin: 16px 0;
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+    }
+    .seo-block h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #555;
+    }
+.seo-block ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #555;
+}
+
+.seo-block p {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 8px;
+  color: #555;
+}
     /* 免責事項 */
     .disclaimer {
       margin-top: 40px; padding: 20px;
@@ -300,6 +353,19 @@
 
 <div class="container">
   <h1>金属重量計算ツール</h1>
+  <!-- SEO: lead -->
+  <p class="seo-lead">図面の部品表や材料見積りに使える、金属・鋼材重量の無料計算ツール。</p>
+
+  <!-- SEO: howto -->
+  <div class="seo-howto">
+    <div class="seo-mini-title">▼ 使い方</div>
+    <ol>
+      <li>形状・材質・サイズ（寸法）を選択</li>
+      <li>「＋ リストに追加」をクリック</li>
+      <li>数量（＋/－）で個数を調整</li>
+      <li>「Excel用コピー」または各セルの「Copy」で貼り付け</li>
+    </ol>
+  </div>
 
   <div class="result-box">
     <div class="res-info-line">
@@ -349,8 +415,8 @@
     </div>
   </div>
 
-  <div class="group-box">
-    <span class="group-title">形状</span>
+      <div class="group-box" id="shapeBox">
+        <span class="group-title">形状</span>
     <div class="shape-grid" id="shapeButtons">
       <button class="shape-btn active" data-shape="plate">
         <svg class="shape-icon" viewBox="0 0 40 40"><rect x="5" y="12" width="30" height="16" rx="2" ry="2" /></svg>
@@ -397,8 +463,8 @@
     </div>
   </div>
 
-  <div class="group-box">
-    <span class="group-title">サイズ・長さ</span>
+      <div class="group-box" id="sizeBox">
+        <span class="group-title">サイズ・長さ</span>
     
     <div id="stdButtonsArea" class="std-grid"></div>
 
@@ -429,6 +495,28 @@
     </details>
   </div>
   
+  <!-- SEO: target -->
+  <section class="seo-block">
+    <h2>こんな方におすすめ</h2>
+    <ul>
+      <li>機械設計・製缶設計で部品表を作る人</li>
+      <li>材料費や重量の概算を素早く出したい人</li>
+      <li>手計算やExcelの重量計算が面倒な人</li>
+    </ul>
+  </section>
+
+  <!-- SEO: benefits -->
+  <section class="seo-block">
+    <h2>このツールのメリット</h2>
+    <p>機械設計や見積業務での重量計算を、できるだけシンプルにするための機能をまとめています。</p>
+    <ul>
+      <li>計算ミスを減らせる（規格選択＋概算表示）</li>
+      <li>リストで合計重量を一括集計できる</li>
+      <li>Excelに貼り付けやすい（TSVコピー）</li>
+      <li>比重を手入力してカスタム材にも対応できる</li>
+      <li>スマホでも使える（現場・外出先でもOK）</li>
+    </ul>
+  </section>
   <div class="disclaimer">
     <strong>【免責事項】</strong>
     本ツールの計算結果は概算であり、実際の製品重量とは差異が生じる場合があります。<br>
@@ -439,8 +527,8 @@
 
 <div class="footer-menu">
   <button class="f-btn" onclick="window.scrollTo(0,0)"><span>🔝</span>Top</button>
-  <button class="f-btn" onclick="document.querySelector('.group-box:nth-of-type(3)').scrollIntoView({behavior:'smooth', block:'center'})"><span>🔷</span>形状</button>
-  <button class="f-btn" onclick="document.querySelector('.group-box:nth-of-type(5)').scrollIntoView({behavior:'smooth', block:'center'})"><span>📏</span>寸法</button>
+  <button class="f-btn" onclick="document.getElementById('shapeBox').scrollIntoView({behavior:'smooth', block:'center'})"><span>🔷</span>形状</button>
+  <button class="f-btn" onclick="document.getElementById('sizeBox').scrollIntoView({behavior:'smooth', block:'center'})"><span>📏</span>寸法</button>
 </div>
 
 <script>
@@ -1017,4 +1105,3 @@ window.copyTableTSV = function() {
 </script>
 </body>
 </html>
-
