@@ -3,8 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>金属重量計算ツール | 現場で使えるWebアプリ</title>
+<title>金属重量計算ツール｜鋼材・丸棒・パイプ重量を即時計算</title>
 <meta name="description" content="平鋼・丸棒・パイプなどの鋼材重量を無料で即時計算。部品表作成や材料見積りに便利。リスト集計とExcel用コピー、比重の手入力にも対応。">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://hiro-mw-calc.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="金属重量計算ツール | 鋼材・JIS規格対応">
+<meta property="og:description" content="H鋼やチャンネルなどの理論重量を簡単計算。リスト集計＆Excelコピー機能搭載。">
+<meta property="og:url" content="https://hiro-mw-calc.netlify.app/">
+<meta property="og:site_name" content="金属重量計算ツール">
+<meta property="og:image" content="https://hiro-mw-calc.netlify.app/ogp-image.png">
+<meta name="twitter:card" content="summary_large_image">
   <style>
     /* ===== 基本スタイル (v20ベース) ===== */
     body {
@@ -328,6 +337,49 @@
   margin: 0 0 8px;
   color: #555;
 }
+    /* FAQアコーディオン */
+    .faq-details {
+      margin-bottom: 10px;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      background: #f8f9fa;
+    }
+    .faq-details summary {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #333;
+      cursor: pointer;
+      list-style: none; /* デフォルトの矢印を消す */
+      position: relative;
+    }
+    .faq-details summary::-webkit-details-marker {
+      display: none;
+    }
+    .faq-details summary::after {
+      content: '▼';
+      position: absolute;
+      right: 16px;
+      font-size: 10px;
+      color: #999;
+      transition: transform 0.2s;
+    }
+    .faq-details[open] summary::after {
+      transform: rotate(180deg);
+      color: #007bff;
+    }
+    .faq-details p {
+      padding: 0 16px 14px;
+      margin: 0;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+      border-top: 1px dashed #dee2e6;
+      padding-top: 12px;
+      background: #fff;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
     /* 免責事項 */
     .disclaimer {
       margin-top: 40px; padding: 20px;
@@ -516,6 +568,35 @@
       <li>比重を手入力してカスタム材にも対応できる</li>
       <li>スマホでも使える（現場・外出先でもOK）</li>
     </ul>
+  </section>
+
+  <section class="seo-block">
+    <h2>よくある質問（FAQ）</h2>
+    
+    <details class="faq-details">
+      <summary>独自の材質や、ボタンにない材質の計算はできますか？</summary>
+      <p>はい、可能です。「比重」の入力枠に数値を直接入力していただくか、材質選択で「その他」を選んで比重を設定することで、樹脂など任意の材質の重量も計算できます。</p>
+    </details>
+
+    <details class="faq-details">
+      <summary>一覧にない特殊な寸法の鋼材は計算できますか？</summary>
+      <p>はい、「詳細寸法を手動入力」の項目（または寸法入力欄）から、板厚や幅などの数値を直接入力していただくことで計算が可能です。</p>
+    </details>
+
+    <details class="faq-details">
+      <summary>計算結果の横に出る「JIS」と「概算」のマークは何ですか？</summary>
+      <p>「JIS」は、入力寸法が規格サイズと一致しており、規格上の単位重量を用いて計算していることを示します。「概算」は、入力された寸法と比重から体積を算出して求めた理論値です。</p>
+    </details>
+
+    <details class="faq-details">
+      <summary>表示される重量はそのまま発注重量として使えますか？</summary>
+      <p>本ツールの計算結果はあくまで概算値（理論値）です。実際の鋼材には製造公差（プラス目・マイナス目）があるため、実際の製品重量とは差異が生じる場合があります。部品表や材料費の目安としてご利用ください。</p>
+    </details>
+    
+    <details class="faq-details">
+      <summary>集計したリストをExcelで使いたいのですが。</summary>
+      <p>集計リストの右下にある「Excel用コピー」ボタンをご利用ください。リスト全体が自動でタブ区切り（TSV）形式でコピーされ、そのままExcelやスプレッドシートに貼り付けできます。</p>
+    </details>
   </section>
   <div class="disclaimer">
     <strong>【免責事項】</strong>
@@ -1105,3 +1186,4 @@ window.copyTableTSV = function() {
 </script>
 </body>
 </html>
+
