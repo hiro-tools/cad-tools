@@ -179,6 +179,7 @@
       opacity: 0.3;
       transition: opacity 0.2s;
     }
+    .cell-copy-btn:hover { opacity: 1; }
     tr:hover .cell-copy-btn { opacity: 1; }
     .cell-copy-btn:active { background: #0078d4; color:#fff; }
 
@@ -463,6 +464,10 @@
         </thead>
         <tbody></tbody>
       </table>
+    </div>
+    <div style="text-align:right; margin-top:8px; font-size:12px; color:#333;">
+      <span id="totalWeightLabel" style="font-weight:bold; margin-right:8px;">総合計: 0.0 kg</span>
+      <button class="cell-copy-btn" onclick="copyTotalWeight()" style="font-size:11px;">Copy</button>
     </div>
     <div style="text-align:right; margin-top:8px;">
       <button onclick="copyTableTSV()" style="padding:4px 8px; background:#6c757d; color:#fff; border:none; border-radius:4px; font-size:11px;">Excel用コピー</button>
@@ -1101,7 +1106,8 @@ function getDimString(s, v1, v2, v3, v4) {
 window.setPrecision = function(n) {
   state.precision = n;
   for(let i=0; i<=3; i++) document.getElementById('precBtn'+i).classList.toggle('active', i===n);
-  calc(); addToList(true); 
+  calc(); addToList(true);
+  updateTotalWeight();
 };
 
 function addToList(isUpdateOnly=false) {
@@ -1141,12 +1147,35 @@ function addToList(isUpdateOnly=false) {
     </td>
     <td class="c-val">${w.toFixed(state.precision)}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
     <td class="c-val total-cell" style="font-weight:bold">${w.toFixed(state.precision)}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span></td>
-    <td><button class="del-btn" onclick="this.closest('tr').remove()">×</button></td>
+    <td><button class="del-btn" onclick="deleteListRow(this)">×</button></td>
   `;
   
   tbody.appendChild(tr);
+  updateTotalWeight();
   tr.scrollIntoView({behavior: 'smooth', block: 'center'});
 }
+
+function updateTotalWeight() {
+  const rows = document.querySelectorAll('#listTable tbody tr');
+  let sum = 0;
+  rows.forEach(tr => {
+    const unit = parseFloat(tr.dataset.unitWeight) || 0;
+    const qtyEl = tr.querySelector('.qty-val');
+    const qty = qtyEl ? (parseInt(qtyEl.textContent, 10) || 0) : 0;
+    sum += unit * qty;
+  });
+  const label = document.getElementById('totalWeightLabel');
+  if(label) {
+    label.textContent = `総合計: ${sum.toFixed(state.precision)} kg`;
+    label.dataset.totalWeight = sum.toFixed(state.precision);
+  }
+}
+
+window.deleteListRow = function(btn) {
+  const tr = btn.closest('tr');
+  if(tr) tr.remove();
+  updateTotalWeight();
+};
 
 window.updateQty = function(btn, delta) {
   const tr = btn.closest('tr');
@@ -1158,6 +1187,15 @@ window.updateQty = function(btn, delta) {
   const total = unit * q;
   const totalCell = tr.querySelector('.total-cell');
   totalCell.innerHTML = `${total.toFixed(state.precision)}<span class="cell-copy-btn" onclick="copyCell(this)">Copy</span>`;
+  updateTotalWeight();
+};
+
+window.copyTotalWeight = function() {
+  const label = document.getElementById('totalWeightLabel');
+  const text = (label && label.dataset.totalWeight) ? label.dataset.totalWeight : (0).toFixed(state.precision);
+  navigator.clipboard.writeText(text).then(() => {
+    alert('総合計重量をコピーしました');
+  });
 };
 
 window.copyCell = function(btn) {
@@ -1188,7 +1226,3 @@ window.copyTableTSV = function() {
 </script>
 </body>
 </html>
-
-
-
-
