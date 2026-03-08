@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="hCBsDACeSl7vbuzQlZ281ZQXotpv42qmT4sGvjfYWso" />
-<title>金属重量計算ツール｜鋼材・丸棒・パイプ重量を即時計算</title>
-<meta name="description" content="平鋼・丸棒・パイプなどの鋼材重量を無料で即時計算。部品表作成や材料見積りに便利。リスト集計とExcel用コピー、比重の手入力にも対応。">
+<title>金属重量計算ツール｜H鋼・アングル・角パイプなどの鋼材重量を即時計算</title>
+<meta name="description" content="H鋼、アングル、チャンネル、角パイプ、丸パイプなどの鋼材重量を無料で即時計算。図面の部品表作成や材料手配に便利。リスト集計とExcel用コピー、比重の手入力にも対応した金属重量計算ツール。">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://hiro-tools.github.io/metal-weight-calculator/">
 <meta property="og:type" content="website">
@@ -18,6 +18,23 @@
 <link rel="icon" type="image/x-icon" href="/metal-weight-calculator/favicon.ico">
 <link rel="shortcut icon" href="/metal-weight-calculator/favicon.ico">
 <link rel="apple-touch-icon" href="/metal-weight-calculator/favicon.ico">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "金属重量計算ツール",
+  "url": "https://hiro-tools.github.io/metal-weight-calculator/",
+  "description": "H鋼、アングル、チャンネル、角パイプなどの鋼材重量を即時計算できる無料のブラウザツールです。",
+  "applicationCategory": "EngineeringApplication",
+  "operatingSystem": "Any",
+  "keywords": "鋼材重量計算,H鋼重量,アングル重量,チャンネル重量,角パイプ重量,丸パイプ重量,体積計算,鋼材の重さ",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "JPY"
+  }
+}
+</script>
   <style>
     /* ===== 基本スタイル (v20ベース) ===== */
     body {
@@ -432,10 +449,12 @@
       -
     </div>
 
-    <div class="result-row">
+    <div class="result-row" style="align-items: baseline; flex-wrap: wrap; gap: 6px;">
+      <span style="font-size: 14px; color: #adb5bd;">重量</span>
       <span id="weightVal" class="result-val">0.0</span>
       <span class="result-unit">kg</span>
       <span id="calcStatus" style="font-size:10px; background:#444; padding:2px 4px; border-radius:3px;"></span>
+      <span style="font-size: 13px; color: #868e96; margin-left: 4px;" title="体積・重さの目安">(<span id="volumeVal">0.0</span> cm³)</span>
     </div>
     
     <button id="btnAdd" class="add-btn">＋ リストに追加</button>
@@ -561,8 +580,9 @@
     <h2>こんな方におすすめ</h2>
     <ul>
       <li>機械設計・製缶設計で部品表を作る人</li>
-      <li>材料費や重量の概算を素早く出したい人</li>
-      <li>手計算やExcelの重量計算が面倒な人</li>
+      <li>手計算やExcelでの鋼材重量計算を効率化したい人</li>
+      <li>H鋼、アングル、チャンネル等の重量を素早く調べたい人</li>
+      <li>角パイプや丸パイプ等の合計重量をまとめて集計したい人</li>
     </ul>
   </section>
 
@@ -581,6 +601,11 @@
 
   <section class="seo-block">
     <h2>よくある質問（FAQ）</h2>
+    
+    <details class="faq-details">
+      <summary>どんな種類の鋼材重量計算に対応していますか？</summary>
+      <p>H鋼、アングル、チャンネル、角パイプ、丸パイプ、平鋼、丸棒、I形鋼の8形状に対応しています。JIS規格寸法を選ぶだけで簡単に重量計算が可能です。</p>
+    </details>
     
     <details class="faq-details">
       <summary>独自の材質や、ボタンにない材質の計算はできますか？</summary>
@@ -1049,22 +1074,29 @@ function calc() {
   let unitWeight = 0; let isExact = false;
   const showBadge = ['angle','channel','ibeam','hbeam'].includes(shape) || (shape==='square' && state.mat==='SS400');
   
+  // 常に断面積(area)を計算する
+  let area = 0; 
+  if(shape === 'plate') area = v1 * v2;
+  else if(shape === 'round') area = Math.PI * (v1/2)**2;
+  else if(shape === 'pipe') { if(v2>0 && v2<v1/2) area = Math.PI*((v1/2)**2 - (v1/2-v2)**2); }
+  else if(shape === 'square') { if(v2>0 && v2<v1/2) area = v1**2 - (v1-2*v2)**2; }
+  else if(shape === 'angle') { if(v3>0) area = (v1+v2-v3)*v3; }
+  else if(shape === 'channel' && v3>0 && v4>0) area = (v1*v3) + 2*(v2-v3)*v4; 
+  else if((shape === 'ibeam'||shape==='hbeam') && v3>0 && v4>0) area = (v1-2*v4)*v3 + 2*v2*v4; 
+
   if(state.matchedWeight && state.mat === 'SS400' && showBadge) {
     unitWeight = state.matchedWeight; isExact = true;
   } else {
-    let area = 0; 
-    if(shape === 'plate') area = v1 * v2;
-    else if(shape === 'round') area = Math.PI * (v1/2)**2;
-    else if(shape === 'pipe') { if(v2>0 && v2<v1/2) area = Math.PI*((v1/2)**2 - (v1/2-v2)**2); }
-    else if(shape === 'square') { if(v2>0 && v2<v1/2) area = v1**2 - (v1-2*v2)**2; }
-    else if(shape === 'angle') { if(v3>0) area = (v1+v2-v3)*v3; }
-    else if(shape === 'channel' && v3>0 && v4>0) area = (v1*v3) + 2*(v2-v3)*v4; 
-    else if((shape === 'ibeam'||shape==='hbeam') && v3>0 && v4>0) area = (v1-2*v4)*v3 + 2*v2*v4; 
     unitWeight = (area * rho) / 1000;
   }
 
   const totalW = unitWeight * (L / 1000);
   document.getElementById('weightVal').textContent = totalW.toFixed(state.precision);
+  
+  // 体積(cm³)の計算と表示 (mm³ -> cm³ は /1000)
+  const volumeCm3 = (area * L) / 1000;
+  const volEl = document.getElementById('volumeVal');
+  if(volEl) volEl.textContent = volumeCm3.toFixed(1);
   
   const statusEl = document.getElementById('calcStatus');
   if (!showBadge) { statusEl.style.display='none'; } else {
