@@ -488,7 +488,7 @@
     </div>
     <div style="text-align:right; margin-top:8px; font-size:12px; color:#333;">
       <span id="totalWeightLabel" style="font-weight:bold; margin-right:8px;">総合計: 0.0 kg</span>
-      <button class="cell-copy-btn" onclick="copyTotalWeight()" style="font-size:11px;">Copy</button>
+      <button class="cell-copy-btn" onclick="copyTotalWeight(this)" style="font-size:11px;">Copy</button>
     </div>
     <div style="text-align:right; margin-top:8px;">
       <button onclick="copyTableTSV()" style="padding:4px 8px; background:#6c757d; color:#fff; border:none; border-radius:4px; font-size:11px;">Excel用コピー</button>
@@ -1226,11 +1226,13 @@ window.updateQty = function(btn, delta) {
   updateTotalWeight();
 };
 
-window.copyTotalWeight = function() {
+window.copyTotalWeight = function(btn) {
   const label = document.getElementById('totalWeightLabel');
   const text = (label && label.dataset.totalWeight) ? label.dataset.totalWeight : (0).toFixed(state.precision);
   navigator.clipboard.writeText(text).then(() => {
-    alert('総合計重量をコピーしました');
+    const originalText = btn.textContent;
+    btn.textContent = "OK!";
+    setTimeout(() => btn.textContent = originalText, 1000);
   });
 };
 
@@ -1257,6 +1259,7 @@ window.copyTableTSV = function() {
     const total= tds[6].firstChild.textContent;
     txt += `${name}\t${mat}\t${dim}\t${qty}\t${unit}\t${total}\n`;
   });
+
   navigator.clipboard.writeText(txt).then(()=>alert('コピーしました'));
 };
 </script>
