@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="基準寸法と公差域クラスを入力するだけで、軸と穴のはめあい公差（寸法許容差、隙間、締め代）を即座に計算します。">
+  <link rel="canonical" href="https://cad-tools.jp/fit-tolerance-calc/">
+  <title>はめあい公差計算ツール</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="はめあい公差計算ツール">
+  <meta property="og:description" content="基準寸法と公差域クラスを入力するだけで、軸と穴のはめあい公差（寸法許容差、隙間、締め代）を即座に計算します。">
+  <meta property="og:url" content="https://cad-tools.jp/fit-tolerance-calc/">
+  <meta property="og:site_name" content="はめあい公差計算ツール">
+  <meta property="og:image" content="ogp-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.ico">
+  <style>
+    :root {
+      --panel: rgba(255, 250, 241, 0.92);
+      --panel-strong: #fff8ee;
+      --panel-soft: rgba(255, 252, 247, 0.9);
+      --ink: #1d1a16;
+      --muted: #675d50;
+      --line: rgba(76, 58, 39, 0.14);
+      --accent: #9b3d22;
+      --shadow: 0 20px 50px rgba(68, 42, 15, 0.12);
+      --radius: 22px;
+      --font-ui: "Aptos", "Yu Gothic UI", sans-serif;
+      --font-display: "BIZ UDPMincho", "HGS明朝E", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-ui);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(217, 155, 78, 0.22), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(155, 61, 34, 0.18), transparent 24%),
+        linear-gradient(135deg, #f8f2e7, #efe4d3 52%, #eadcc8);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(95, 71, 34, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(95, 71, 34, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 20px auto 36px;
+      display: grid;
+      gap: 18px;
+      animation: rise 0.55s ease-out;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -50px;
+      top: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 155, 78, 0.42), transparent 70%);
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0.04em;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-meta,
+    .current-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-meta {
+      margin-top: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 248, 238, 0.82);
+      border: 1px solid rgba(155, 61, 34, 0.12);
+      font-size: 0.92rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(340px, 0.78fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
+
+    .subtle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .number-wrap,
+    .selection-block {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid rgba(89, 62, 35, 0.18);
+      border-radius: 14px;
+      background: rgba(255, 252, 247, 0.88);
+      color: var(--ink);
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid rgba(155, 61, 34, 0.2);
+      border-color: rgba(155, 61, 34, 0.45);
+    }
+
+    .adjust-row,
+    .mode-row,
+    .range-grid,
+    .tolerance-grid,
+    .fit-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .adjust-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      justify-content: stretch;
+      align-self: end;
+    }
+
+    .mode-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .range-grid {
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+    }
+
+    .tolerance-grid {
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+    }
+
+    .tolerance-grid.show-all {
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 8px;
+    }
+
+    .tolerance-grid.show-all .tolerance-btn {
+      padding: 8px 6px;
+      font-size: 0.84rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .fit-grid {
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+
+    .adjust-btn,
+    .mode-btn,
+    .range-btn,
+    .tolerance-btn,
+    .toggle-btn,
+    .pair-btn,
+    .ghost-btn {
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .adjust-btn:hover,
+    .mode-btn:hover,
+    .range-btn:hover,
+    .tolerance-btn:hover,
+    .toggle-btn:hover,
+    .pair-btn:hover,
+    .ghost-btn:hover,
+    .copy-inline:hover {
+      transform: translateY(-1px);
+      border-color: rgba(155, 61, 34, 0.4);
+      box-shadow: 0 12px 30px rgba(78, 52, 26, 0.08);
+    }
+
+    .adjust-btn,
+    .ghost-btn {
+      padding: 10px 14px;
+    }
+
+    .mode-btn,
+    .toggle-btn {
+      padding: 14px 16px;
+      text-align: left;
+    }
+
+    .mode-btn strong,
+    .pair-btn strong {
+      display: block;
+      font-size: 0.96rem;
+    }
+
+    .mode-btn span,
+    .pair-btn span,
+    .range-btn small {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .range-btn small {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .mode-btn.active,
+    .range-btn.active,
+    .tolerance-btn.active,
+    .pair-btn.active,
+    .toggle-btn.active {
+      background: linear-gradient(135deg, rgba(155, 61, 34, 0.1), rgba(217, 155, 78, 0.18));
+      border-color: rgba(155, 61, 34, 0.55);
+    }
+
+    .range-btn,
+    .tolerance-btn {
+      padding: 12px 14px;
+      text-align: left;
+    }
+
+    .tolerance-btn {
+      font-weight: 700;
+    }
+
+    .pair-btn {
+      padding: 14px 16px;
+      text-align: left;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .current-summary {
+      margin: 0 0 14px;
+    }
+
+    .summary-tag {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(255, 251, 245, 0.88);
+      border: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .summary-tag strong {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .toggle-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .toggle-btn span:last-child {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .fit-panel-body {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .result-panel {
+      position: sticky;
+      top: 18px;
+    }
+
+    .result-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .copy-status {
+      min-height: 1.2em;
+      color: var(--accent);
+      font-size: 0.86rem;
+      text-align: right;
+    }
+
+    .fit-state {
+      margin: 14px 0 16px;
+      padding: 16px;
+      border-radius: 18px;
+      color: #fff7ef;
+    }
+
+    .fit-state.clearance {
+      background: linear-gradient(135deg, #275844, #4f8b6b);
+    }
+
+    .fit-state.transition {
+      background: linear-gradient(135deg, #8c5c12, #c99a3f);
+    }
+
+    .fit-state.interference {
+      background: linear-gradient(135deg, #6f2227, #ab4a50);
+    }
+
+    .fit-state strong {
+      display: block;
+      font-size: 1.08rem;
+      margin-bottom: 4px;
+    }
+
+    .result-cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-card-header strong {
+      font-size: 1rem;
+    }
+
+    .result-lines {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-line {
+      display: grid;
+      gap: 6px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(89, 62, 35, 0.14);
+    }
+
+    .result-line:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .result-line-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .inline-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .copy-target-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 12px;
+      transition: background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .copy-target-wrap:hover {
+      background: rgba(217, 155, 78, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(155, 61, 34, 0.08);
+    }
+
+    .inline-value {
+      font-size: 1.02rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+
+    .inline-value.mono {
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-weight: 600;
+    }
+
+    .copy-inline {
+      border: 1px solid rgba(89, 62, 35, 0.18);
+      background: rgba(255, 252, 247, 0.96);
+      color: var(--muted);
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      line-height: 1;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .copy-target-wrap:hover .copy-inline,
+    .copy-target-wrap:hover .inline-value {
+      background: rgba(255, 248, 238, 0.96);
+    }
+
+    .detail-panel {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255, 252, 247, 0.78);
+    }
+
+    .detail-panel summary {
+      cursor: pointer;
+      padding: 16px 18px;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .detail-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .detail-content {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-box {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 251, 245, 0.88);
+      display: grid;
+      gap: 8px;
+    }
+
+    .detail-box strong {
+      font-size: 0.9rem;
+    }
+
+    .detail-box dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    .detail-box dt {
+      color: var(--muted);
+    }
+
+    .detail-box dd {
+      margin: 0;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      margin: 20px 0 0;
+      text-align: left;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .disclaimer {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto 28px;
+      color: rgba(29, 26, 22, 0.62);
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+
+    .app-footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 30px;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 960px) {
+      .layout,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        width: min(100% - 18px, 1180px);
+        margin: 10px auto 26px;
+      }
+
+      .hero,
+      .panel {
+        padding: 18px;
+      }
+
+      .input-row,
+      .mode-row {
+        grid-template-columns: 1fr;
+      }
+
+      .adjust-row {
+        justify-content: stretch;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .result-title {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <h1>はめあい公差計算ツール</h1>
+      <p>軸公差・穴公差を、図面用の文字列として生成するツールです。</p>
+      <div class="hero-meta">
+        <div class="chip">対象規格: JIS B 0401</div>
+        <div class="chip">出力: テキスト / AutoCAD / CADSUPER</div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <h2>基準寸法（径）</h2>
+          <div class="input-row">
+            <div class="number-wrap">
+              <label for="diameterInput">径 [mm]</label>
+              <input id="diameterInput" type="number" min="0.001" max="500" step="0.001" value="50">
+            </div>
+            <div class="adjust-row">
+              <button class="adjust-btn" type="button" data-adjust="100">+100</button>
+              <button class="adjust-btn" type="button" data-adjust="10">+10</button>
+              <button class="adjust-btn" type="button" data-adjust="1">+1</button>
+              <button class="adjust-btn" type="button" data-adjust="-100">-100</button>
+              <button class="adjust-btn" type="button" data-adjust="-10">-10</button>
+              <button class="adjust-btn" type="button" data-adjust="-1">-1</button>
+            </div>
+          </div>
+          <p class="subtle" id="rangeStatus"></p>
+          <div class="range-grid" id="rangeGrid"></div>
+          <div class="toolbar">
+            <button class="ghost-btn" id="rangeToggleButton" type="button"></button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>公差</h2>
+          <div class="mode-row" role="tablist" aria-label="単独公差モード">
+            <button class="mode-btn active" type="button" data-focus="hole">
+              <strong>穴公差</strong>
+            </button>
+            <button class="mode-btn" type="button" data-focus="shaft">
+              <strong>軸公差</strong>
+            </button>
+            <button class="mode-btn" type="button" data-focus="fit">
+              <strong>はめあい（組合せ）</strong>
+            </button>
+          </div>
+
+          <div class="selection-block is-hidden" id="fitSelectionBlock">
+            <label for="fitGrid">おすすめの組合せ</label>
+            <div class="fit-grid" id="fitGrid"></div>
+            <div class="toolbar">
+              <button class="ghost-btn" id="fitMoreButton" type="button"></button>
+            </div>
+          </div>
+
+          <div class="selection-block" id="holeSelectionBlock">
+            <label for="holeToleranceGrid">穴公差域クラス</label>
+            <div class="tolerance-grid" id="holeToleranceGrid"></div>
+            <div class="toolbar">
+              <button class="ghost-btn" id="holeToggleButton" type="button"></button>
+            </div>
+          </div>
+
+          <div class="selection-block is-hidden" id="shaftSelectionBlock">
+            <label for="shaftToleranceGrid">軸公差域クラス</label>
+            <div class="tolerance-grid" id="shaftToleranceGrid"></div>
+            <div class="toolbar">
+              <button class="ghost-btn" id="shaftToggleButton" type="button"></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel result-panel">
+        <div class="result-title">
+          <div>
+            <h2>出力結果</h2>
+          </div>
+        </div>
+
+        <div class="fit-state is-hidden" id="fitState"></div>
+
+        <div class="result-cards" id="resultCards"></div>
+
+        <details class="detail-panel">
+          <summary>計算詳細を見る</summary>
+          <div class="detail-content">
+            <div class="detail-grid" id="detailGrid"></div>
+            <p class="footnote">※ 本ツールの寸法公差は JIS B 0401 に基づく標準公差値を適用しています。一覧にない特殊な公差域クラスや、最新の社内規格・メーカー仕様と照合する場合は、各種公差表を併せてご確認ください。</p>
+          </div>
+        </details>
+      </section>
+    </div>
+    <footer class="app-footer">&copy; 2026 Hiro Tools. All rights reserved.</footer>
+  </main>
+  <footer class="disclaimer">
+    ※ 本ツールは JIS B 0401 に基づく理論値を提供しますが、計算結果を保証するものではありません。最終的な設計・加工指示においては、必ず最新のJIS規格表やメーカー仕様書等をご確認ください。本ツールの利用によるいかなる損害についても責任を負いかねます。
+  </footer>
+
+  <script>
+    const RANGE_TABLE = [
+      { minExclusive: 0, maxInclusive: 3, label: "0 < d <= 3", display: "〜3", midpoint: 1.5 },
+      { minExclusive: 3, maxInclusive: 6, label: "3 < d <= 6", display: "3-6", midpoint: 4.5 },
+      { minExclusive: 6, maxInclusive: 10, label: "6 < d <= 10", display: "6-10", midpoint: 8 },
+      { minExclusive: 10, maxInclusive: 14, label: "10 < d <= 14", display: "10-14", midpoint: 12 },
+      { minExclusive: 14, maxInclusive: 18, label: "14 < d <= 18", display: "14-18", midpoint: 16 },
+      { minExclusive: 18, maxInclusive: 24, label: "18 < d <= 24", display: "18-24", midpoint: 21 },
+      { minExclusive: 24, maxInclusive: 30, label: "24 < d <= 30", display: "24-30", midpoint: 27 },
+      { minExclusive: 30, maxInclusive: 40, label: "30 < d <= 40", display: "30-40", midpoint: 35 },
+      { minExclusive: 40, maxInclusive: 50, label: "40 < d <= 50", display: "40-50", midpoint: 45 },
+      { minExclusive: 50, maxInclusive: 65, label: "50 < d <= 65", display: "50-65", midpoint: 57.5 },
+      { minExclusive: 65, maxInclusive: 80, label: "65 < d <= 80", display: "65-80", midpoint: 72.5 },
+      { minExclusive: 80, maxInclusive: 100, label: "80 < d <= 100", display: "80-100", midpoint: 90 },
+      { minExclusive: 100, maxInclusive: 120, label: "100 < d <= 120", display: "100-120", midpoint: 110 },
+      { minExclusive: 120, maxInclusive: 140, label: "120 < d <= 140", display: "120-140", midpoint: 130 },
+      { minExclusive: 140, maxInclusive: 160, label: "140 < d <= 160", display: "140-160", midpoint: 150 },
+      { minExclusive: 160, maxInclusive: 180, label: "160 < d <= 180", display: "160-180", midpoint: 170 },
+      { minExclusive: 180, maxInclusive: 200, label: "180 < d <= 200", display: "180-200", midpoint: 190 },
+      { minExclusive: 200, maxInclusive: 225, label: "200 < d <= 225", display: "200-225", midpoint: 212.5 },
+      { minExclusive: 225, maxInclusive: 250, label: "225 < d <= 250", display: "225-250", midpoint: 237.5 },
+      { minExclusive: 250, maxInclusive: 280, label: "250 < d <= 280", display: "250-280", midpoint: 265 },
+      { minExclusive: 280, maxInclusive: 315, label: "280 < d <= 315", display: "280-315", midpoint: 297.5 },
+      { minExclusive: 315, maxInclusive: 355, label: "315 < d <= 355", display: "315-355", midpoint: 335 },
+      { minExclusive: 355, maxInclusive: 400, label: "355 < d <= 400", display: "355-400", midpoint: 377.5 },
+      { minExclusive: 400, maxInclusive: 450, label: "400 < d <= 450", display: "400-450", midpoint: 425 },
+      { minExclusive: 450, maxInclusive: 500, label: "450 < d <= 500", display: "450-500", midpoint: 475 }
+    ];
+
+    const HOLE_CSV = `公差クラス,B10,B10,C9,C9,C10,C10,D8,D8,D9,D9,D10,D10,E7,E7,E8,E8,E9,E9,F6,F6,F7,F7,F8,F8,G6,G6,G7,G7,H5,H5,H6,H6,H7,H7,H8,H8,H9,H9,H10,H10,JS5,JS5,JS6,JS6,JS7,JS7,K5,K5,K6,K6,K7,K7,M5,M5,M6,M6,M7,M7,N6,N6,N7,N7,P6,P6,P7,P7,R7,R7,S7,S7,T7,T7,U7,U7,X7,X7
+上/下,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower
+〜3,180,140,85,60,100,60,34,20,45,20,60,20,24,14,28,14,39,14,12,6,16,6,20,6,8,2,12,2,4,0,6,0,10,0,14,0,25,0,40,0,2,-2,3,-3,5,-5,0,-4,0,-6,0,-10,-2,-6,-2,-8,-2,-12,-4,-10,-4,-14,-6,-12,-6,-16,-10,-20,-14,-24,,,-18,-28,-20,-30
+3-6,188,140,100,70,118,70,48,30,60,30,78,30,32,20,38,20,50,20,18,10,22,10,28,10,12,4,16,4,5,0,8,0,12,0,18,0,30,0,48,0,2.5,-2.5,4,-4,6,-6,0,-5,2,-6,3,-9,-3,-8,-1,-9,0,-12,-5,-13,-4,-16,-9,-17,-8,-20,-11,-23,-15,-27,,,-19,-31,-24,-36
+6-10,208,150,116,80,138,80,62,40,76,40,98,40,40,25,47,25,61,25,22,13,28,13,35,13,14,5,20,5,6,0,9,0,15,0,22,0,36,0,58,0,3,-3,4.5,-4.5,7.5,-7.5,1,-5,2,-7,5,-10,-4,-10,-3,-12,0,-15,-7,-16,-4,-19,-12,-21,-9,-24,-13,-28,-17,-32,,,-22,-37,-28,-43
+10-14,220,150,138,95,165,95,77,50,93,50,120,50,50,32,59,32,75,32,27,16,34,16,43,16,17,6,24,6,8,0,11,0,18,0,27,0,43,0,70,0,4,-4,5.5,-5.5,9,-9,2,-6,2,-9,6,-12,-4,-12,-4,-15,0,-18,-9,-20,-5,-23,-15,-26,-11,-29,-16,-34,-21,-39,,,-26,-44,-33,-51
+14-18,220,150,138,95,165,95,77,50,93,50,120,50,50,32,59,32,75,32,27,16,34,16,43,16,17,6,24,6,8,0,11,0,18,0,27,0,43,0,70,0,4,-4,5.5,-5.5,9,-9,2,-6,2,-9,6,-12,-4,-12,-4,-15,0,-18,-9,-20,-5,-23,-15,-26,-11,-29,-16,-34,-21,-39,,,-26,-44,-38,-56
+18-24,244,160,162,110,194,110,98,65,117,65,149,65,61,40,73,40,92,40,33,20,41,20,53,20,20,7,28,7,9,0,13,0,21,0,33,0,52,0,84,0,4.5,-4.5,6.5,-6.5,10.5,-10.5,1,-8,2,-11,6,-15,-5,-14,-4,-17,0,-21,-11,-24,-7,-28,-18,-31,-14,-35,-20,-41,-27,-48,,,-33,-54,-46,-67
+24-30,244,160,162,110,194,110,98,65,117,65,149,65,61,40,73,40,92,40,33,20,41,20,53,20,20,7,28,7,9,0,13,0,21,0,33,0,52,0,84,0,4.5,-4.5,6.5,-6.5,10.5,-10.5,1,-8,2,-11,6,-15,-5,-14,-4,-17,0,-21,-11,-24,-7,-28,-18,-31,-14,-35,-20,-41,-27,-48,-33,-54,-40,-61,-56,-77
+30-40,270,170,182,120,220,120,119,80,142,80,180,80,75,50,89,50,112,50,41,25,50,25,64,25,25,9,34,9,11,0,16,0,25,0,39,0,62,0,100,0,5.5,-5.5,8,-8,12.5,-12.5,2,-9,3,-13,7,-18,-5,-16,-4,-20,0,-25,-12,-28,-8,-33,-21,-37,-17,-42,-25,-50,-34,-59,-39,-64,-51,-76,-71,-96
+40-50,280,180,192,130,230,130,119,80,142,80,180,80,75,50,89,50,112,50,41,25,50,25,64,25,25,9,34,9,11,0,16,0,25,0,39,0,62,0,100,0,5.5,-5.5,8,-8,12.5,-12.5,2,-9,3,-13,7,-18,-5,-16,-4,-20,0,-25,-12,-28,-8,-33,-21,-37,-17,-42,-25,-50,-34,-59,-45,-70,-61,-86,-88,-113
+50-65,310,190,214,140,260,140,146,100,174,100,220,100,90,60,106,60,134,60,49,30,60,30,76,30,29,10,40,10,13,0,19,0,30,0,46,0,74,0,120,0,6.5,-6.5,9.5,-9.5,15,-15,3,-10,4,-15,9,-21,-6,-19,-5,-24,0,-30,-14,-33,-9,-39,-26,-45,-21,-51,-30,-60,-42,-72,-55,-85,-76,-106,-111,-141
+65-80,320,200,224,150,270,150,146,100,174,100,220,100,90,60,106,60,134,60,49,30,60,30,76,30,29,10,40,10,13,0,19,0,30,0,46,0,74,0,120,0,6.5,-6.5,9.5,-9.5,15,-15,3,-10,4,-15,9,-21,-6,-19,-5,-24,0,-30,-14,-33,-9,-39,-26,-45,-21,-51,-32,-62,-48,-78,-64,-94,-91,-121,-135,-165
+80-100,360,220,257,170,310,170,174,120,207,120,260,120,107,72,126,72,159,72,58,36,71,36,90,36,34,12,47,12,15,0,22,0,35,0,54,0,87,0,140,0,7.5,-7.5,11,-11,17.5,-17.5,2,-13,4,-18,10,-25,-8,-23,-6,-28,0,-35,-16,-38,-10,-45,-30,-52,-24,-59,-38,-73,-58,-93,-78,-113,-111,-146,-165,-200
+100-120,380,240,267,180,320,180,174,120,207,120,260,120,107,72,126,72,159,72,58,36,71,36,90,36,34,12,47,12,15,0,22,0,35,0,54,0,87,0,140,0,7.5,-7.5,11,-11,17.5,-17.5,2,-13,4,-18,10,-25,-8,-23,-6,-28,0,-35,-16,-38,-10,-45,-30,-52,-24,-59,-41,-76,-66,-101,-91,-126,-131,-166,-197,-232
+120-140,420,260,300,200,360,200,208,145,245,145,305,145,125,85,148,85,185,85,68,43,83,43,106,43,39,14,54,14,18,0,25,0,40,0,63,0,100,0,160,0,9,-9,12.5,-12.5,20,-20,3,-15,4,-21,12,-28,-9,-27,-8,-33,0,-40,-20,-45,-12,-52,-36,-61,-28,-68,-48,-88,-77,-117,-107,-147,-155,-195,-233,-273
+140-160,440,280,310,210,370,210,208,145,245,145,305,145,125,85,148,85,185,85,68,43,83,43,106,43,39,14,54,14,18,0,25,0,40,0,63,0,100,0,160,0,9,-9,12.5,-12.5,20,-20,3,-15,4,-21,12,-28,-9,-27,-8,-33,0,-40,-20,-45,-12,-52,-36,-61,-28,-68,-50,-90,-85,-125,-119,-159,-175,-215,-265,-305
+160-180,470,310,330,230,390,230,208,145,245,145,305,145,125,85,148,85,185,85,68,43,83,43,106,43,39,14,54,14,18,0,25,0,40,0,63,0,100,0,160,0,9,-9,12.5,-12.5,20,-20,3,-15,4,-21,12,-28,-9,-27,-8,-33,0,-40,-20,-45,-12,-52,-36,-61,-28,-68,-53,-93,-93,-133,-131,-171,-195,-235,-295,-335
+180-200,525,340,355,240,425,240,242,170,285,170,355,170,146,100,172,100,215,100,79,50,96,50,122,50,44,15,61,15,20,0,29,0,46,0,72,0,115,0,185,0,10,-10,14.5,-14.5,23,-23,2,-18,5,-24,13,-33,-11,-31,-8,-37,0,-46,-22,-51,-14,-60,-41,-70,-33,-79,-60,-106,-105,-151,-149,-195,-219,-265,-333,-379
+200-225,565,380,375,260,445,260,242,170,285,170,355,170,146,100,172,100,215,100,79,50,96,50,122,50,44,15,61,15,20,0,29,0,46,0,72,0,115,0,185,0,10,-10,14.5,-14.5,23,-23,2,-18,5,-24,13,-33,-11,-31,-8,-37,0,-46,-22,-51,-14,-60,-41,-70,-33,-79,-63,-109,-113,-159,-169,-209,-241,-287,-368,-414
+225-250,605,420,395,280,465,280,242,170,285,170,355,170,146,100,172,100,215,100,79,50,96,50,122,50,44,15,61,15,20,0,29,0,46,0,72,0,115,0,185,0,10,-10,14.5,-14.5,23,-23,2,-18,5,-24,13,-33,-11,-31,-8,-37,0,-46,-22,-51,-14,-60,-41,-70,-33,-79,-67,-113,-123,-169,-179,-225,-267,-313,-408,-454
+250-280,690,480,430,300,510,300,271,190,320,190,400,190,162,110,191,110,240,110,88,56,108,56,137,56,49,17,69,17,23,0,32,0,52,0,81,0,130,0,210,0,11.5,-11.5,16,-16,26,-26,3,-20,5,-27,16,-36,-13,-36,-9,-41,0,-52,-25,-57,-14,-66,-47,-79,-36,-88,-74,-126,-138,-190,-198,-250,-295,-347,-455,-507
+280-315,750,540,460,330,540,330,271,190,320,190,400,190,162,110,191,110,240,110,88,56,108,56,137,56,49,17,69,17,23,0,32,0,52,0,81,0,130,0,210,0,11.5,-11.5,16,-16,26,-26,3,-20,5,-27,16,-36,-13,-36,-9,-41,0,-52,-25,-57,-14,-66,-47,-79,-36,-88,-78,-130,-150,-202,-220,-272,-330,-382,-505,-557
+315-355,830,600,500,360,590,360,299,210,350,210,440,210,182,125,214,125,265,125,98,62,119,62,151,62,54,18,75,18,25,0,36,0,57,0,89,0,140,0,230,0,12.5,-12.5,18,-18,28.5,-28.5,3,-22,7,-29,17,-40,-14,-39,-10,-46,0,-57,-26,-62,-16,-73,-51,-87,-41,-98,-87,-144,-169,-226,-247,-304,-369,-426,-569,-626
+355-400,910,680,540,400,630,400,299,210,350,210,440,210,182,125,214,125,265,125,98,62,119,62,151,62,54,18,75,18,25,0,36,0,57,0,89,0,140,0,230,0,12.5,-12.5,18,-18,28.5,-28.5,3,-22,7,-29,17,-40,-14,-39,-10,-46,0,-57,-26,-62,-16,-73,-51,-87,-41,-98,-93,-150,-187,-244,-273,-330,-414,-471,-639,-696
+400-450,1010,760,595,440,690,440,327,230,385,230,480,230,198,135,232,135,290,135,108,68,131,68,165,68,60,20,83,20,27,0,40,0,63,0,97,0,155,0,250,0,13.5,-13.5,20,-20,31.5,-31.5,2,-25,8,-32,18,-45,-16,-43,-10,-50,0,-63,-27,-67,-17,-80,-55,-95,-45,-108,-103,-166,-209,-272,-307,-370,-467,-530,-717,-780
+450-500,1090,840,635,480,730,480,327,230,385,230,480,230,198,135,232,135,290,135,108,68,131,68,165,68,60,20,83,20,27,0,40,0,63,0,97,0,155,0,250,0,13.5,-13.5,20,-20,31.5,-31.5,2,-25,8,-32,18,-45,-16,-43,-10,-50,0,-63,-27,-67,-17,-80,-55,-95,-45,-108,-109,-172,-229,-292,-337,-400,-517,-580,-797,-860`;
+
+    const SHAFT_CSV = `公差クラス,b9,b9,c9,c9,d8,d8,d9,d9,e7,e7,e8,e8,e9,e9,f6,f6,f7,f7,f8,f8,f9,f9,g4,g4,g5,g5,g6,g6,g7,g7,h4,h4,h5,h5,h6,h6,h7,h7,h8,h8,h9,h9,js4,js4,js5,js5,js6,js6,js7,js7,k4,k4,k5,k5,k6,k6,m4,m4,m5,m5,m6,m6,n6,n6,p6,p6,r6,r6,s6,s6,t6,t6,u6,u6,x6,x6
+上/下,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower,upper,lower
+〜3,-140,-165,-60,-85,-20,-34,-20,-45,-14,-24,-14,-28,-14,-39,-6,-12,-6,-16,-6,-20,-6,-31,-2,-5,-2,-6,-2,-8,-2,-12,0,-3,0,-4,0,-6,0,-10,0,-14,0,-25,1.5,-1.5,2,-2,3,-3,5,-5,3,0,4,0,6,0,5,2,6,2,8,2,10,4,12,6,16,10,20,14,,,24,18,26,20
+3-6,-140,-170,-70,-100,-30,-48,-30,-60,-20,-32,-20,-38,-20,-50,-10,-18,-10,-22,-10,-28,-10,-40,-4,-8,-4,-9,-4,-12,-4,-16,0,-4,0,-5,0,-8,0,-12,0,-18,0,-30,2,-2,2.5,-2.5,4,-4,6,-6,5,1,6,1,9,1,8,4,9,4,12,4,16,8,20,12,23,15,27,19,,,31,23,36,28
+6-10,-150,-186,-80,-116,-40,-62,-40,-76,-25,-40,-25,-47,-25,-61,-13,-22,-13,-28,-13,-35,-13,-49,-5,-9,-5,-11,-5,-14,-5,-20,0,-4,0,-6,0,-9,0,-15,0,-22,0,-36,2,-2,3,-3,4.5,-4.5,7.5,-7.5,5,1,7,1,10,1,10,6,12,6,15,6,19,10,24,15,28,19,32,23,,,37,28,43,34
+10-14,-150,-193,-95,-138,-50,-77,-50,-93,-32,-50,-32,-59,-32,-75,-16,-27,-16,-34,-16,-43,-16,-59,-6,-11,-6,-14,-6,-17,-6,-24,0,-5,0,-8,0,-11,0,-18,0,-27,0,-43,2.5,-2.5,4,-4,5.5,-5.5,9,-9,6,1,9,1,12,1,12,7,15,7,18,7,23,12,29,18,34,23,39,28,,,44,33,51,40
+14-18,-150,-193,-95,-138,-50,-77,-50,-93,-32,-50,-32,-59,-32,-75,-16,-27,-16,-34,-16,-43,-16,-59,-6,-11,-6,-14,-6,-17,-6,-24,0,-5,0,-8,0,-11,0,-18,0,-27,0,-43,2.5,-2.5,4,-4,5.5,-5.5,9,-9,6,1,9,1,12,1,12,7,15,7,18,7,23,12,29,18,34,23,39,28,,,44,33,56,45
+18-24,-160,-212,-110,-162,-65,-98,-65,-117,-40,-61,-40,-73,-40,-92,-20,-33,-20,-41,-20,-53,-20,-72,-7,-13,-7,-16,-7,-20,-7,-28,0,-6,0,-9,0,-13,0,-21,0,-33,0,-52,3,-3,4.5,-4.5,6.5,-6.5,10.5,-10.5,8,2,11,2,15,2,14,8,17,8,21,8,28,15,35,22,41,28,48,35,,,54,41,67,54
+24-30,-160,-212,-110,-162,-65,-98,-65,-117,-40,-61,-40,-73,-40,-92,-20,-33,-20,-41,-20,-53,-20,-72,-7,-13,-7,-16,-7,-20,-7,-28,0,-6,0,-9,0,-13,0,-21,0,-33,0,-52,3,-3,4.5,-4.5,6.5,-6.5,10.5,-10.5,8,2,11,2,15,2,14,8,17,8,21,8,28,15,35,22,41,28,48,35,54,41,61,48,77,64
+30-40,-170,-232,-120,-182,-80,-119,-80,-142,-50,-75,-50,-89,-50,-112,-25,-41,-25,-50,-25,-64,-25,-87,-9,-16,-9,-20,-9,-25,-9,-34,0,-7,0,-11,0,-16,0,-25,0,-39,0,-62,3.5,-3.5,5.5,-5.5,8,-8,12.5,-12.5,9,2,13,2,18,2,16,9,20,9,25,9,33,17,42,26,50,34,59,43,64,48,76,60,96,80
+40-50,-180,-242,-130,-192,-80,-119,-80,-142,-50,-75,-50,-89,-50,-112,-25,-41,-25,-50,-25,-64,-25,-87,-9,-16,-9,-20,-9,-25,-9,-34,0,-7,0,-11,0,-16,0,-25,0,-39,0,-62,3.5,-3.5,5.5,-5.5,8,-8,12.5,-12.5,9,2,13,2,18,2,16,9,20,9,25,9,33,17,42,26,50,34,59,43,70,54,86,70,113,97
+50-65,-190,-264,-140,-214,-100,-146,-100,-174,-60,-90,-60,-106,-60,-134,-30,-49,-30,-60,-30,-76,-30,-104,-10,-18,-10,-23,-10,-29,-10,-40,0,-8,0,-13,0,-19,0,-30,0,-46,0,-74,4,-4,6.5,-6.5,9.5,-9.5,15,-15,10,2,15,2,21,2,19,11,24,11,30,11,39,20,51,32,60,41,72,53,85,66,106,87,141,122
+65-80,-200,-274,-150,-224,-100,-146,-100,-174,-60,-90,-60,-106,-60,-134,-30,-49,-30,-60,-30,-76,-30,-104,-10,-18,-10,-23,-10,-29,-10,-40,0,-8,0,-13,0,-19,0,-30,0,-46,0,-74,4,-4,6.5,-6.5,9.5,-9.5,15,-15,10,2,15,2,21,2,19,11,24,11,30,11,39,20,51,32,62,43,78,59,94,75,121,102,165,146
+80-100,-220,-307,-170,-257,-120,-174,-120,-207,-72,-107,-72,-126,-72,-159,-36,-58,-36,-71,-36,-90,-36,-123,-12,-22,-12,-27,-12,-34,-12,-47,0,-10,0,-15,0,-22,0,-35,0,-54,0,-87,5,-5,7.5,-7.5,11,-11,17.5,-17.5,13,3,18,3,25,3,23,13,28,13,35,13,45,23,59,37,73,51,93,71,113,91,146,124,200,178
+100-120,-240,-327,-180,-267,-120,-174,-120,-207,-72,-107,-72,-126,-72,-159,-36,-58,-36,-71,-36,-90,-36,-123,-12,-22,-12,-27,-12,-34,-12,-47,0,-10,0,-15,0,-22,0,-35,0,-54,0,-87,5,-5,7.5,-7.5,11,-11,17.5,-17.5,13,3,18,3,25,3,23,13,28,13,35,13,45,23,59,37,76,54,101,79,126,104,166,144,232,210
+120-140,-260,-360,-200,-300,-145,-208,-145,-245,-85,-125,-85,-148,-85,-185,-43,-68,-43,-83,-43,-106,-43,-143,-14,-26,-14,-32,-14,-39,-14,-54,0,-12,0,-18,0,-25,0,-40,0,-63,0,-100,6,-6,9,-9,12.5,-12.5,20,-20,15,3,21,3,28,3,27,15,33,15,40,15,52,27,68,43,88,63,117,92,147,122,195,170,273,248
+140-160,-280,-380,-210,-310,-145,-208,-145,-245,-85,-125,-85,-148,-85,-185,-43,-68,-43,-83,-43,-106,-43,-143,-14,-26,-14,-32,-14,-39,-14,-54,0,-12,0,-18,0,-25,0,-40,0,-63,0,-100,6,-6,9,-9,12.5,-12.5,20,-20,15,3,21,3,28,3,27,15,33,15,40,15,52,27,68,43,90,65,125,100,159,134,215,190,305,280
+160-180,-310,-410,-230,-330,-145,-208,-145,-245,-85,-125,-85,-148,-85,-185,-43,-68,-43,-83,-43,-106,-43,-143,-14,-26,-14,-32,-14,-39,-14,-54,0,-12,0,-18,0,-25,0,-40,0,-63,0,-100,6,-6,9,-9,12.5,-12.5,20,-20,15,3,21,3,28,3,27,15,33,15,40,15,52,27,68,43,93,68,133,108,171,146,235,210,335,310
+180-200,-340,-455,-240,-355,-170,-242,-170,-285,-100,-146,-100,-172,-100,-215,-50,-79,-50,-96,-50,-122,-50,-165,-15,-29,-15,-35,-15,-44,-15,-61,0,-14,0,-20,0,-29,0,-46,0,-72,0,-115,7,-7,10,-10,14.5,-14.5,23,-23,18,4,24,4,33,4,31,17,37,17,46,17,60,31,79,50,106,77,151,122,195,166,265,236,379,350
+200-225,-380,-495,-260,-375,-170,-242,-170,-285,-100,-146,-100,-172,-100,-215,-50,-79,-50,-96,-50,-122,-50,-165,-15,-29,-15,-35,-15,-44,-15,-61,0,-14,0,-20,0,-29,0,-46,0,-72,0,-115,7,-7,10,-10,14.5,-14.5,23,-23,18,4,24,4,33,4,31,17,37,17,46,17,60,31,79,50,109,80,159,130,209,180,287,258,414,385
+225-250,-420,-535,-280,-395,-170,-242,-170,-285,-100,-146,-100,-172,-100,-215,-50,-79,-50,-96,-50,-122,-50,-165,-15,-29,-15,-35,-15,-44,-15,-61,0,-14,0,-20,0,-29,0,-46,0,-72,0,-115,7,-7,10,-10,14.5,-14.5,23,-23,18,4,24,4,33,4,31,17,37,17,46,17,60,31,79,50,113,84,169,140,225,196,313,284,454,425
+250-280,-480,-610,-300,-430,-190,-271,-190,-320,-110,-162,-110,-191,-110,-240,-56,-88,-56,-108,-56,-137,-56,-186,-17,-33,-17,-40,-17,-49,-17,-69,0,-16,0,-23,0,-32,0,-52,0,-81,0,-130,8,-8,11.5,-11.5,16,-16,26,-26,20,4,27,4,36,4,36,20,43,20,52,20,66,34,88,56,126,94,190,158,250,218,347,315,507,475
+280-315,-540,-670,-330,-460,-190,-271,-190,-320,-110,-162,-110,-191,-110,-240,-56,-88,-56,-108,-56,-137,-56,-186,-17,-33,-17,-40,-17,-49,-17,-69,0,-16,0,-23,0,-32,0,-52,0,-81,0,-130,8,-8,11.5,-11.5,16,-16,26,-26,20,4,27,4,36,4,36,20,43,20,52,20,66,34,88,56,130,98,202,170,272,240,382,350,557,525
+315-355,-600,-740,-360,-500,-210,-299,-210,-350,-125,-182,-125,-214,-125,-265,-62,-98,-62,-119,-62,-151,-62,-202,-18,-36,-18,-43,-18,-54,-18,-75,0,-18,0,-25,0,-36,0,-57,0,-89,0,-140,9,-9,12.5,-12.5,18,-18,28.5,-28.5,22,4,29,4,40,4,39,21,46,21,57,21,73,37,98,62,144,108,226,190,304,268,426,390,626,590
+355-400,-680,-820,-400,-540,-210,-299,-210,-350,-125,-182,-125,-214,-125,-265,-62,-98,-62,-119,-62,-151,-62,-202,-18,-36,-18,-43,-18,-54,-18,-75,0,-18,0,-25,0,-36,0,-57,0,-89,0,-140,9,-9,12.5,-12.5,18,-18,28.5,-28.5,22,4,29,4,40,4,39,21,46,21,57,21,73,37,98,62,150,114,244,208,330,294,471,435,696,660
+400-450,-760,-915,-440,-595,-230,-327,-230,-385,-135,-198,-135,-232,-135,-290,-68,-108,-68,-131,-68,-165,-68,-223,-20,-40,-20,-47,-20,-60,-20,-83,0,-20,0,-27,0,-40,0,-63,0,-97,0,-155,10,-10,13.5,-13.5,20,-20,31.5,-31.5,25,5,32,5,45,5,43,23,50,23,63,23,80,40,108,68,166,126,272,232,370,330,530,490,780,740
+450-500,-840,-995,-480,-635,-230,-327,-230,-385,-135,-198,-135,-232,-135,-290,-68,-108,-68,-131,-68,-165,-68,-223,-20,-40,-20,-47,-20,-60,-20,-83,0,-20,0,-27,0,-40,0,-63,0,-97,0,-155,10,-10,13.5,-13.5,20,-20,31.5,-31.5,25,5,32,5,45,5,43,23,50,23,63,23,80,40,108,68,172,132,292,252,400,360,580,540,860,820`;
+
+    const JIS_TOLERANCE_TABLE = {};
+
+    function loadToleranceFromCSV(csvText) {
+      const lines = csvText.trim().split('\n').map((line) => line.trim()).filter((line) => line);
+      if (lines.length < 3) return;
+
+      const classes = lines[0].split(',');
+
+      for (let i = 2; i < lines.length; i += 1) {
+        const cols = lines[i].split(',');
+        const rangeDisplay = cols[0];
+
+        for (let c = 1; c < cols.length; c += 2) {
+          const symbol = classes[c];
+          if (!symbol) continue;
+
+          const upperStr = cols[c];
+          const lowerStr = cols[c + 1];
+
+          if (upperStr === "" || lowerStr === "") continue;
+
+          if (!JIS_TOLERANCE_TABLE[symbol]) {
+            JIS_TOLERANCE_TABLE[symbol] = {};
+          }
+
+          JIS_TOLERANCE_TABLE[symbol][rangeDisplay] = {
+            upper: Number(upperStr),
+            lower: Number(lowerStr),
+            tolerance: Number(upperStr) - Number(lowerStr)
+          };
+        }
+      }
+    }
+
+    loadToleranceFromCSV(HOLE_CSV);
+    loadToleranceFromCSV(SHAFT_CSV);
+
+    const COMMON_RANGES = new Set(["10-14", "14-18", "18-24", "24-30", "30-40", "40-50", "50-65", "65-80"]);
+
+    const HOLE_SYMBOLS = {
+      primary: ["H7", "H8", "H6", "H9", "G7", "F7"],
+      secondary: ["G6", "F6", "E7", "E9", "H10", "JS6"],
+      all: [
+        "B10", "C9", "C10", "D8", "D9", "D10", "E7", "E8", "E9", "F6", "F7", "F8",
+        "G6", "G7", "H5", "H6", "H7", "H8", "H9", "H10", "JS5", "JS6", "JS7", "K5",
+        "K6", "K7", "M5", "M6", "M7", "N6", "N7", "P6", "P7", "R7", "S7", "T7", "U7", "X7"
+      ]
+    };
+
+    const SHAFT_SYMBOLS = {
+      primary: ["h6", "h7", "g6", "f7", "p6", "js6"],
+      secondary: ["g7", "f6", "e7", "e9", "d9", "k5", "m5"],
+      all: [
+        "b9", "c9", "d8", "d9", "e7", "e8", "e9", "f6", "f7", "f8", "f9", "g4",
+        "g5", "g6", "g7", "h4", "h5", "h6", "h7", "h8", "h9", "js4", "js5", "js6", "js7",
+        "k4", "k5", "k6", "m4", "m5", "m6", "n6", "p6", "r6", "s6", "t6", "u6", "x6"
+      ]
+    };
+
+    const FIT_OPTIONS = [
+      { hole: "H7", shaft: "g6", label: "H7/g6", note: "精密スライド・定番" },
+      { hole: "H7", shaft: "p6", label: "H7/p6", note: "一般的な圧入" },
+      { hole: "H6", shaft: "h6", label: "H6/h6", note: "位置決め向け" },
+      { hole: "H8", shaft: "f7", label: "H8/f7", note: "回転・可動の定番" },
+      { hole: "H9", shaft: "e7", label: "H9/e7", note: "ゆるめの可動" },
+      { hole: "H9", shaft: "e9", label: "H9/e9", note: "ラフな逃がし" },
+      { hole: "H8", shaft: "f6", label: "H8/f6", note: "動き重視の可動" },
+      { hole: "H7", shaft: "g7", label: "H7/g7", note: "やや余裕のある可動" },
+      { hole: "H10", shaft: "d9", label: "H10/d9", note: "とくにゆるい静止または可動" }
+    ];
+
+    const PRIMARY_FITS = new Set(["H7/g6", "H7/p6", "H6/h6", "H8/f7"]);
+
+    const state = {
+      diameter: 50,
+      focus: "hole",
+      hole: "H7",
+      shaft: "g6",
+      rangeExpanded: false,
+      holeExpansionLevel: 0,
+      shaftExpansionLevel: 0,
+      fitListExpanded: false
+    };
+
+    const elements = {
+      diameterInput: document.getElementById("diameterInput"),
+      rangeStatus: document.getElementById("rangeStatus"),
+      rangeGrid: document.getElementById("rangeGrid"),
+      rangeToggleButton: document.getElementById("rangeToggleButton"),
+      modeButtons: Array.from(document.querySelectorAll("[data-focus]")),
+      fitSelectionBlock: document.getElementById("fitSelectionBlock"),
+      holeSelectionBlock: document.getElementById("holeSelectionBlock"),
+      shaftSelectionBlock: document.getElementById("shaftSelectionBlock"),
+      holeToleranceGrid: document.getElementById("holeToleranceGrid"),
+      shaftToleranceGrid: document.getElementById("shaftToleranceGrid"),
+      holeToggleButton: document.getElementById("holeToggleButton"),
+      shaftToggleButton: document.getElementById("shaftToggleButton"),
+      fitGrid: document.getElementById("fitGrid"),
+      fitMoreButton: document.getElementById("fitMoreButton"),
+      fitState: document.getElementById("fitState"),
+      resultCards: document.getElementById("resultCards"),
+      detailGrid: document.getElementById("detailGrid")
+    };
+
+    function clampDiameter(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return 50;
+      }
+      return Math.min(500, Math.max(0.001, Number(numeric.toFixed(3))));
+    }
+
+    function getActiveRange(diameter) {
+      return RANGE_TABLE.find((range) => diameter > range.minExclusive && diameter <= range.maxInclusive) || RANGE_TABLE.at(-1);
+    }
+
+    function isCommonRange(range) {
+      return COMMON_RANGES.has(range.display);
+    }
+
+    function stripTrailingZeros(value) {
+      return value.replace(/\.?0+$/, "");
+    }
+
+    function formatDiameter(value) {
+      return stripTrailingZeros(Number(value).toFixed(3));
+    }
+
+    function micronToMillimeter(valueMicrons) {
+      return valueMicrons / 1000;
+    }
+
+    function formatDeviation(valueMicrons) {
+      if (valueMicrons === 0) {
+        return "0";
+      }
+      const value = micronToMillimeter(valueMicrons);
+      return (value > 0 ? "+" : "") + value.toFixed(3);
+    }
+
+    function formatStackValue(valueMicrons) {
+      return valueMicrons === 0 ? " 0" : formatDeviation(valueMicrons);
+    }
+
+    function formatMicronValue(valueMicrons) {
+      if (valueMicrons > 0) {
+        return "+" + valueMicrons;
+      }
+      if (valueMicrons === 0) {
+        return "0";
+      }
+      return String(valueMicrons);
+    }
+
+    function formatMicronRange(minMicrons, maxMicrons) {
+      return formatMicronValue(minMicrons) + " 〜 " + formatMicronValue(maxMicrons) + " μm";
+    }
+
+    function formatAbsoluteMicronValue(valueMicrons) {
+      return formatMicronValue(Math.abs(valueMicrons));
+    }
+
+    function getFitDetailEntries(calc) {
+      const largerValue = calc.maxClearance;
+      const smallerValue = calc.minClearance;
+
+      return {
+        largerLabel: largerValue > 0 ? "最大すきま" : "最小しめしろ",
+        largerValue: largerValue > 0 ? formatMicronValue(largerValue) : formatAbsoluteMicronValue(largerValue),
+        smallerLabel: smallerValue >= 0 ? "最小すきま" : "最大しめしろ",
+        smallerValue: smallerValue >= 0 ? formatMicronValue(smallerValue) : formatAbsoluteMicronValue(smallerValue),
+        rangeText: formatMicronValue(smallerValue) + " 〜 " + formatMicronValue(largerValue) + " μm"
+      };
+    }
+
+    function getZone(symbol, range) {
+      const symbolTable = JIS_TOLERANCE_TABLE[symbol];
+      if (symbolTable && symbolTable[range.display]) {
+        const zone = symbolTable[range.display];
+        return {
+          available: true,
+          lower: zone.lower,
+          upper: zone.upper,
+          tolerance: zone.upper - zone.lower
+        };
+      }
+      return {
+        available: false,
+        message: "表に値がありません"
+      };
+    }
+
+    function getCurrentCalculation() {
+      const range = getActiveRange(state.diameter);
+      const holeZone = getZone(state.hole, range);
+      const shaftZone = getZone(state.shaft, range);
+      const canCalculateFit = holeZone.available && shaftZone.available;
+      const minClearance = canCalculateFit ? holeZone.lower - shaftZone.upper : null;
+      const maxClearance = canCalculateFit ? holeZone.upper - shaftZone.lower : null;
+
+      return {
+        range,
+        holeZone,
+        shaftZone,
+        canCalculateFit,
+        minClearance,
+        maxClearance
+      };
+    }
+
+    function classifyFit(minClearance, maxClearance) {
+      if (minClearance >= 0) {
+        return { key: "clearance", label: "すきまばめ", description: "穴が常に軸より大きい状態です。" };
+      }
+      if (maxClearance <= 0) {
+        return { key: "interference", label: "しまりばめ", description: "常にしめしろが発生する状態です。" };
+      }
+      return { key: "transition", label: "中間ばめ", description: "すきまとしめしろの両方があり得ます。" };
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getVisibleSymbols(group, level) {
+      if (level === 0) {
+        return group.primary;
+      }
+      if (level === 1) {
+        return Array.from(new Set(group.primary.concat(group.secondary)));
+      }
+      return group.all;
+    }
+
+    function getToggleLabel(level) {
+      if (level === 0) {
+        return "もっと見る（補助クラスを表示）";
+      }
+      if (level === 1) {
+        return "すべて見る（全クラスを表示）";
+      }
+      return "閉じる（主要クラスのみ表示）";
+    }
+
+    function buildCopyButton(value) {
+      return "<button class=\"copy-inline\" type=\"button\" data-copy=\"" + escapeHtml(value) + "\">Copy</button>";
+    }
+
+    function buildResultLine(label, fragments, mono) {
+      return [
+        "<div class=\"result-line\">",
+        "<div class=\"result-line-label\">", escapeHtml(label), "</div>",
+        "<div class=\"inline-group\">",
+        fragments.map((fragment) => {
+          return "<span class=\"copy-target-wrap\"><span class=\"inline-value" + (mono ? " mono" : "") + "\">" + escapeHtml(fragment.value) + "</span>" + buildCopyButton(fragment.copy) + "</span>";
+        }).join(""),
+        "</div>",
+        "</div>"
+      ].join("");
+    }
+
+    function buildTargetStrings(symbol, zone) {
+      if (!zone.available) {
+        return null;
+      }
+
+      const diameterText = "φ" + formatDiameter(state.diameter);
+      const autoCad = formatDeviation(zone.upper) + "^" + formatStackValue(zone.lower);
+      const cadSuper = "[" + formatDeviation(zone.upper) + "_" + formatStackValue(zone.lower) + "]";
+
+      return {
+        spec: [
+          { value: diameterText, copy: diameterText },
+          { value: symbol, copy: symbol }
+        ],
+        deviations: [
+          { value: formatDeviation(zone.upper), copy: formatDeviation(zone.upper) },
+          { value: formatDeviation(zone.lower), copy: formatDeviation(zone.lower) }
+        ],
+        autoCad,
+        cadSuper
+      };
+    }
+
+    function formatSizeLimit(baseDiameter, deviationMicrons) {
+      return (baseDiameter + micronToMillimeter(deviationMicrons)).toFixed(3);
+    }
+
+    function renderRangeButtons() {
+      const activeRange = getActiveRange(state.diameter);
+      const visibleRanges = state.rangeExpanded ? RANGE_TABLE : RANGE_TABLE.filter((range) => isCommonRange(range));
+
+      elements.rangeGrid.innerHTML = visibleRanges.map((range) => {
+        const active = range.display === activeRange.display ? " active" : "";
+        return "<button class=\"range-btn" + active + "\" type=\"button\" data-range=\"" + range.display + "\">" +
+          escapeHtml(range.display) +
+          "<small>" + escapeHtml(range.label) + "</small>" +
+        "</button>";
+      }).join("");
+
+      elements.rangeToggleButton.textContent = state.rangeExpanded
+        ? "閉じる（よく使う寸法区分に戻す）"
+        : "もっと見る（全寸法区分を表示）";
+
+      elements.rangeStatus.textContent = "現在の径 φ" + formatDiameter(state.diameter) + " は " + activeRange.display + " の寸法区分です。";
+    }
+
+    function renderModeButtons() {
+      elements.modeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.focus === state.focus);
+      });
+    }
+
+    function renderSelectionBlocks() {
+      const fitMode = state.focus === "fit";
+      elements.fitSelectionBlock.classList.toggle("is-hidden", !fitMode);
+      elements.holeSelectionBlock.classList.toggle("is-hidden", state.focus === "shaft");
+      elements.shaftSelectionBlock.classList.toggle("is-hidden", state.focus === "hole");
+    }
+
+    function renderToleranceButtons() {
+      const holeSymbols = getVisibleSymbols(HOLE_SYMBOLS, state.holeExpansionLevel);
+      const shaftSymbols = getVisibleSymbols(SHAFT_SYMBOLS, state.shaftExpansionLevel);
+
+      elements.holeToleranceGrid.classList.toggle("show-all", state.holeExpansionLevel === 2);
+      elements.shaftToleranceGrid.classList.toggle("show-all", state.shaftExpansionLevel === 2);
+
+      elements.holeToleranceGrid.innerHTML = holeSymbols.map((symbol) => {
+        const active = symbol === state.hole ? " active" : "";
+        return "<button class=\"tolerance-btn" + active + "\" type=\"button\" data-symbol=\"" + symbol + "\" data-target=\"hole\">" + escapeHtml(symbol) + "</button>";
+      }).join("");
+
+      elements.shaftToleranceGrid.innerHTML = shaftSymbols.map((symbol) => {
+        const active = symbol === state.shaft ? " active" : "";
+        return "<button class=\"tolerance-btn" + active + "\" type=\"button\" data-symbol=\"" + symbol + "\" data-target=\"shaft\">" + escapeHtml(symbol) + "</button>";
+      }).join("");
+
+      elements.holeToggleButton.textContent = getToggleLabel(state.holeExpansionLevel);
+      elements.shaftToggleButton.textContent = getToggleLabel(state.shaftExpansionLevel);
+    }
+
+    function renderFitOptions() {
+      const visibleFits = state.fitListExpanded ? FIT_OPTIONS : FIT_OPTIONS.filter((fit) => PRIMARY_FITS.has(fit.label));
+
+      elements.fitGrid.innerHTML = visibleFits.map((fit) => {
+        const active = fit.hole === state.hole && fit.shaft === state.shaft ? " active" : "";
+        return "<button class=\"pair-btn" + active + "\" type=\"button\" data-fit-hole=\"" + fit.hole + "\" data-fit-shaft=\"" + fit.shaft + "\">" +
+          "<strong>" + escapeHtml(fit.label) + "</strong>" +
+          "<span>" + escapeHtml(fit.note) + "</span>" +
+        "</button>";
+      }).join("");
+
+      elements.fitMoreButton.textContent = state.fitListExpanded
+        ? "閉じる（定番組合せのみ表示）"
+        : "もっと見る（候補を増やす）";
+    }
+
+    function renderFitState(calc) {
+      if (state.focus !== "fit") {
+        elements.fitState.className = "fit-state is-hidden";
+        elements.fitState.innerHTML = "";
+        return;
+      }
+
+      if (!calc.canCalculateFit) {
+        elements.fitState.className = "fit-state transition";
+        elements.fitState.innerHTML = [
+          "<strong>表に値がありません</strong>",
+          "<span>選択した公差域クラスは現在の規格表データに未収録です。</span>"
+        ].join("");
+        return;
+      }
+
+      const fit = classifyFit(calc.minClearance, calc.maxClearance);
+      elements.fitState.className = "fit-state " + fit.key;
+      elements.fitState.innerHTML = [
+        "<strong>", escapeHtml(fit.label), "</strong>",
+        "<span>", escapeHtml(fit.description), " ",
+        escapeHtml(formatMicronRange(calc.minClearance, calc.maxClearance)),
+        "</span>"
+      ].join("");
+    }
+
+    function buildResultCard(target, symbol, zone) {
+      const title = target === "hole" ? "穴公差" : "軸公差";
+
+      if (!zone.available) {
+        return [
+          "<article class=\"result-card\">",
+          "<div class=\"result-card-header\">",
+          "<strong>", escapeHtml(title), "</strong>",
+          "</div>",
+          "<div class=\"result-lines\">",
+          "<div class=\"result-line\">",
+          "<div class=\"result-line-label\">規格表</div>",
+          "<div class=\"inline-group\"><span class=\"inline-value\">表に値がありません</span></div>",
+          "</div>",
+          "</div>",
+          "</article>"
+        ].join("");
+      }
+
+      const strings = buildTargetStrings(symbol, zone);
+
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\">",
+        "<strong>", escapeHtml(title), "</strong>",
+        "</div>",
+        "<div class=\"result-lines\">",
+        buildResultLine("寸法とクラス", strings.spec, false),
+        buildResultLine("上公差 / 下公差", strings.deviations, true),
+        buildResultLine("AutoCAD 表記", [{ value: strings.autoCad, copy: strings.autoCad }], true),
+        buildResultLine("CADSUPER 表記", [{ value: strings.cadSuper, copy: strings.cadSuper }], true),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function renderResultCards(calc) {
+      const cards = [];
+
+      if (state.focus === "fit" || state.focus === "hole") {
+        cards.push(buildResultCard("hole", state.hole, calc.holeZone));
+      }
+
+      if (state.focus === "fit" || state.focus === "shaft") {
+        cards.push(buildResultCard("shaft", state.shaft, calc.shaftZone));
+      }
+
+      elements.resultCards.innerHTML = cards.join("");
+    }
+
+    function buildDetailBox(target, symbol, zone) {
+      const title = target === "hole" ? "穴" : "軸";
+
+      if (!zone.available) {
+        return [
+          "<article class=\"detail-box\">",
+          "<strong>", escapeHtml(title + " " + symbol), "</strong>",
+          "<p class=\"footnote\">表に値がありません</p>",
+          "</article>"
+        ].join("");
+      }
+
+      return [
+        "<article class=\"detail-box\">",
+        "<strong>", escapeHtml(title + " " + symbol), "</strong>",
+        "<dl>",
+        "<dt>基本公差</dt><dd>", escapeHtml(zone.tolerance + " μm"), "</dd>",
+        "<dt>上の寸法許容差</dt><dd>", escapeHtml(formatDeviation(zone.upper)), "</dd>",
+        "<dt>下の寸法許容差</dt><dd>", escapeHtml(formatDeviation(zone.lower)), "</dd>",
+        "<dt>最大許容寸法</dt><dd>", escapeHtml(formatSizeLimit(state.diameter, zone.upper) + " mm"), "</dd>",
+        "<dt>最小許容寸法</dt><dd>", escapeHtml(formatSizeLimit(state.diameter, zone.lower) + " mm"), "</dd>",
+        "</dl>",
+        "</article>"
+      ].join("");
+    }
+
+    function renderDetailGrid(calc) {
+      const boxes = [];
+
+      if (state.focus === "fit" || state.focus === "hole") {
+        boxes.push(buildDetailBox("hole", state.hole, calc.holeZone));
+      }
+
+      if (state.focus === "fit" || state.focus === "shaft") {
+        boxes.push(buildDetailBox("shaft", state.shaft, calc.shaftZone));
+      }
+
+      if (state.focus === "fit" && calc.canCalculateFit) {
+        const fit = classifyFit(calc.minClearance, calc.maxClearance);
+        const fitDetails = getFitDetailEntries(calc);
+        boxes.push([
+          "<article class=\"detail-box\">",
+          "<strong>はめあい結果</strong>",
+          "<dl>",
+          "<dt>判定</dt><dd>", escapeHtml(fit.label), "</dd>",
+          "<dt>", escapeHtml(fitDetails.largerLabel), "</dt><dd>", escapeHtml(fitDetails.largerValue + " μm"), "</dd>",
+          "<dt>", escapeHtml(fitDetails.smallerLabel), "</dt><dd>", escapeHtml(fitDetails.smallerValue + " μm"), "</dd>",
+          "<dt>範囲</dt><dd>", escapeHtml(fitDetails.rangeText), "</dd>",
+          "</dl>",
+          "</article>"
+        ].join(""));
+      } else if (state.focus === "fit" && !calc.canCalculateFit) {
+        boxes.push([
+          "<article class=\"detail-box\">",
+          "<strong>はめあい結果</strong>",
+          "<p class=\"footnote\">表に値がありません</p>",
+          "</article>"
+        ].join(""));
+      }
+
+      elements.detailGrid.innerHTML = boxes.join("");
+    }
+
+    function renderResults() {
+      const calc = getCurrentCalculation();
+
+      renderRangeButtons();
+      renderModeButtons();
+      renderSelectionBlocks();
+      renderToleranceButtons();
+      renderFitOptions();
+      renderFitState(calc);
+      renderResultCards(calc);
+      renderDetailGrid(calc);
+
+      elements.diameterInput.value = formatDiameter(state.diameter);
+    }
+
+    async function copyText(button, text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = button.dataset.defaultLabel || "Copy";
+        button.dataset.defaultLabel = originalText;
+        button.textContent = "OK!";
+        button.disabled = true;
+
+        window.clearTimeout(button._copyResetTimer);
+        button._copyResetTimer = window.setTimeout(() => {
+          button.textContent = originalText;
+          button.disabled = false;
+        }, 1000);
+      } catch (error) {
+        button.textContent = button.dataset.defaultLabel || "Copy";
+      }
+    }
+
+    function clampAdjustedDiameter(value) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return 50;
+      }
+      return Math.min(500, Math.max(1, Number(numeric.toFixed(3))));
+    }
+
+    function updateRangeExpansionForDiameter() {
+      state.rangeExpanded = !isCommonRange(getActiveRange(state.diameter));
+    }
+
+    function initializeEvents() {
+      document.querySelectorAll(".adjust-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.diameter = clampAdjustedDiameter(state.diameter + Number(button.dataset.adjust));
+          updateRangeExpansionForDiameter();
+          renderResults();
+        });
+      });
+
+      elements.diameterInput.addEventListener("change", () => {
+        state.diameter = clampDiameter(elements.diameterInput.value);
+        updateRangeExpansionForDiameter();
+        renderResults();
+      });
+
+      elements.modeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          state.focus = button.dataset.focus;
+          renderResults();
+        });
+      });
+
+      elements.rangeToggleButton.addEventListener("click", () => {
+        state.rangeExpanded = !state.rangeExpanded;
+        renderResults();
+      });
+
+      elements.rangeGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-range]");
+        if (!button) {
+          return;
+        }
+        const selected = RANGE_TABLE.find((range) => range.display === button.dataset.range);
+        if (!selected) {
+          return;
+        }
+        state.diameter = clampDiameter(selected.maxInclusive);
+        renderResults();
+      });
+
+      elements.holeToggleButton.addEventListener("click", () => {
+        state.holeExpansionLevel = (state.holeExpansionLevel + 1) % 3;
+        renderResults();
+      });
+
+      elements.shaftToggleButton.addEventListener("click", () => {
+        state.shaftExpansionLevel = (state.shaftExpansionLevel + 1) % 3;
+        renderResults();
+      });
+
+      elements.holeToleranceGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-symbol]");
+        if (!button) {
+          return;
+        }
+        state.hole = button.dataset.symbol;
+        renderResults();
+      });
+
+      elements.shaftToleranceGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-symbol]");
+        if (!button) {
+          return;
+        }
+        state.shaft = button.dataset.symbol;
+        renderResults();
+      });
+
+      elements.fitMoreButton.addEventListener("click", () => {
+        state.fitListExpanded = !state.fitListExpanded;
+        renderResults();
+      });
+
+      elements.fitGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-fit-hole]");
+        if (!button) {
+          return;
+        }
+        state.hole = button.dataset.fitHole;
+        state.shaft = button.dataset.fitShaft;
+        renderResults();
+      });
+
+      elements.resultCards.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-copy]");
+        if (!button) {
+          return;
+        }
+        copyText(button, button.dataset.copy || "");
+      });
+    }
+
+    function initialize() {
+      initializeEvents();
+      renderResults();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
