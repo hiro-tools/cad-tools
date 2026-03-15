@@ -3,41 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>cad-tools.jp | CAD Tools Portal</title>
+  <title>機械設計・CAD製図向けの無料計算ツールまとめ | cad-tools.jp</title>
   <meta
     name="description"
     content="cad-tools.jpは、機械設計やCAD製図の実務で使える無料の計算ツールサイトです。金属重量計算やはめあい公差計算など、設計業務を効率化するツールを提供しています。"
   >
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #f4f6f8;
-      --bg-accent: radial-gradient(circle at top left, rgba(18, 82, 128, 0.12), transparent 36%),
-        linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
-      --surface: rgba(255, 255, 255, 0.8);
-      --surface-strong: #ffffff;
-      --border: rgba(18, 32, 47, 0.08);
-      --text: #16212b;
-      --muted: #586674;
-      --accent: #0f5c8b;
-      --accent-strong: #0b4a70;
-      --shadow: 0 24px 64px rgba(18, 32, 47, 0.12);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0d141b;
-        --bg-accent: radial-gradient(circle at top left, rgba(82, 168, 255, 0.18), transparent 34%),
-          linear-gradient(180deg, #0d141b 0%, #121b24 100%);
-        --surface: rgba(19, 28, 36, 0.82);
-        --surface-strong: #17212b;
-        --border: rgba(255, 255, 255, 0.08);
-        --text: #f4f7fa;
-        --muted: #9aabb9;
-        --accent: #6ab8ff;
-        --accent-strong: #8ac8ff;
-        --shadow: 0 24px 64px rgba(0, 0, 0, 0.34);
-      }
+      --panel: rgba(255, 250, 241, 0.92);
+      --panel-strong: #fff8ee;
+      --ink: #1d1a16;
+      --muted: #675d50;
+      --line: rgba(76, 58, 39, 0.14);
+      --accent: #9b3d22;
+      --shadow: 0 20px 50px rgba(68, 42, 15, 0.12);
+      --font-ui: "Aptos", "Yu Gothic UI", sans-serif;
+      --font-display: "BIZ UDPMincho", "HGS明朝E", serif;
     }
 
     * {
@@ -47,9 +28,11 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
-      background: var(--bg-accent);
-      color: var(--text);
+      font-family: var(--font-ui);
+      color: var(--ink);
+      background: radial-gradient(circle at top right, rgba(217, 155, 78, 0.22), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(155, 61, 34, 0.18), transparent 24%),
+        linear-gradient(135deg, #f8f2e7, #efe4d3 52%, #eadcc8);
     }
 
     .shell {
@@ -65,6 +48,13 @@
       gap: 28px;
     }
 
+    h1,
+    h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      color: var(--ink);
+    }
+
     .hero {
       display: grid;
       gap: 12px;
@@ -72,6 +62,7 @@
 
     .eyebrow {
       margin: 0;
+      font-family: var(--font-display);
       font-size: 0.82rem;
       font-weight: 700;
       letter-spacing: 0.12em;
@@ -80,7 +71,6 @@
     }
 
     h1 {
-      margin: 0;
       font-size: clamp(2rem, 5vw, 3.6rem);
       line-height: 1.04;
       letter-spacing: -0.03em;
@@ -104,9 +94,9 @@
       position: relative;
       overflow: hidden;
       padding: 28px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       border-radius: 24px;
-      background: linear-gradient(180deg, var(--surface) 0%, var(--surface-strong) 100%);
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
       box-shadow: var(--shadow);
       backdrop-filter: blur(12px);
       transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
@@ -124,8 +114,8 @@
     .tool-card:hover,
     .tool-card:focus-within {
       transform: translateY(-4px);
-      border-color: rgba(15, 92, 139, 0.28);
-      box-shadow: 0 28px 72px rgba(18, 32, 47, 0.18);
+      border-color: rgba(155, 61, 34, 0.4);
+      box-shadow: 0 28px 72px rgba(68, 42, 15, 0.16);
     }
 
     .tool-meta {
@@ -135,7 +125,7 @@
       margin-bottom: 18px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(15, 92, 139, 0.08);
+      background: rgba(155, 61, 34, 0.1);
       color: var(--accent);
       font-size: 0.82rem;
       font-weight: 700;
@@ -166,7 +156,7 @@
 
     .tool-link:hover,
     .tool-link:focus-visible {
-      color: var(--accent-strong);
+      color: #7c2f18;
     }
 
     .tool-link span:last-child {
@@ -205,13 +195,12 @@
     <section class="portal" aria-label="cad-tools.jp portal">
       <header class="hero">
         <p class="eyebrow">cad-tools.jp</p>
-        <h1>機械設計・CAD製図に使える計算ツール群</h1>
+        <h1>機械設計・CAD製図向けの無料計算ツールまとめ</h1>
         <p class="lead">
-          cad-tools.jp は、機械設計やCAD製図の実務で役立つ計算ツールをまとめたサイトです。
-          金属の重量計算やはめあい公差の算出など、設計や見積で頻繁に行う計算をブラウザ上で素早く実行できます。
+          cad-tools.jp は、機械設計やCAD製図の実務で使える無料の計算ツールまとめサイトです。金属の重量計算や、JIS規格に準拠したはめあい公差の算出など、設計業務や見積作業で頻繁に発生する面倒な計算をブラウザ上で素早く実行できます。
         </p>
         <p class="lead">
-          面倒な計算や規格表の確認作業を減らし、本来の設計業務に集中できるよう、シンプルで使いやすいツールを提供しています。
+          分厚い規格表をめくる手間や手計算によるミスを減らし、本来の設計業務に集中できるよう、シンプルで使いやすいツールを提供しています。PC・スマホ問わず、インストール不要ですぐにご利用いただけます。
         </p>
       </header>
 
