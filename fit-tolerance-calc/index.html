@@ -44,6 +44,10 @@
         linear-gradient(135deg, #f8f2e7, #efe4d3 52%, #eadcc8);
     }
 
+    a {
+      color: inherit;
+    }
+
     body::before {
       content: "";
       position: fixed;
@@ -59,6 +63,126 @@
     button,
     input {
       font: inherit;
+    }
+
+    .global-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(248, 242, 231, 0.78);
+      border-bottom: 1px solid rgba(76, 58, 39, 0.1);
+    }
+
+    .header-inner,
+    .page-breadcrumb {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255, 248, 238, 0.86);
+      border: 1px solid rgba(155, 61, 34, 0.15);
+      box-shadow: 0 10px 24px rgba(68, 42, 15, 0.08);
+      flex-shrink: 0;
+    }
+
+    .brand-wordmark {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+    }
+
+    .brand-wordmark span {
+      color: var(--accent);
+    }
+
+    .header-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .header-nav a:hover,
+    .header-nav a:focus-visible {
+      background: rgba(155, 61, 34, 0.1);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .page-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 18px;
+      color: rgba(29, 26, 22, 0.62);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .page-breadcrumb ol {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .page-breadcrumb li {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-breadcrumb li + li::before {
+      content: ">";
+      color: rgba(29, 26, 22, 0.4);
+    }
+
+    .page-breadcrumb a {
+      text-decoration: none;
+    }
+
+    .page-breadcrumb a:hover,
+    .page-breadcrumb a:focus-visible {
+      color: var(--accent);
     }
 
     .app {
@@ -623,6 +747,32 @@
     }
 
     @media (max-width: 640px) {
+      .header-inner,
+      .page-breadcrumb {
+        width: min(100% - 18px, 1180px);
+      }
+
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .brand-wordmark {
+        font-size: 1.05rem;
+      }
+
+      .header-nav {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 6px;
+      }
+
+      .header-nav a {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+
       .app {
         width: min(100% - 18px, 1180px);
         margin: 10px auto 26px;
@@ -650,6 +800,29 @@
   </style>
 </head>
 <body>
+  <header class="global-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="cad-tools.jp トップページ">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b3d22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </span>
+        <span class="brand-wordmark">CAD-TOOLS<span>.JP</span></span>
+      </a>
+      <nav class="header-nav" aria-label="グローバルナビゲーション">
+        <a href="/metal-weight-calc/">金属重量</a>
+        <a href="/fit-tolerance-calc/">はめあい公差</a>
+      </nav>
+    </div>
+  </header>
+  <nav class="page-breadcrumb" aria-label="パンくずリスト">
+    <ol>
+      <li><a href="/">ホーム</a></li>
+      <li aria-current="page">はめあい公差計算ツール</li>
+    </ol>
+  </nav>
   <main class="app">
     <section class="hero">
       <h1>はめあい公差計算ツール</h1>
