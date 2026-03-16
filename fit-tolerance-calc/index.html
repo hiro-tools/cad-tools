@@ -14,6 +14,23 @@
   <meta property="og:image" content="ogp-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.ico">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "はめあい公差計算ツール",
+      "url": "https://cad-tools.jp/fit-tolerance-calc/",
+      "description": "JIS B 0401に準拠した軸と穴のはめあい公差（寸法許容差）、すきま・しめしろを自動計算できる無料ブラウザツールです。",
+      "applicationCategory": "EngineeringApplication",
+      "operatingSystem": "Any",
+      "keywords": "はめあい公差, 寸法許容差, JIS B 0401, 公差計算, すきま, しめしろ, 穴基準, 軸基準",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      }
+    }
+  </script>
   <style>
     :root {
       --panel: rgba(255, 250, 241, 0.92);
@@ -704,6 +721,104 @@
       text-align: left;
     }
 
+    .seo-howto {
+      margin: 0;
+      padding: 18px 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .seo-mini-title {
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .seo-howto ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+
+    .seo-block {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .seo-block h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
+
+    .seo-block p,
+    .seo-block ul {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .seo-block ul {
+      padding-left: 20px;
+    }
+
+    .faq-details {
+      overflow: hidden;
+      margin-top: 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .faq-details summary {
+      position: relative;
+      padding: 16px 50px 16px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .faq-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-details summary::after {
+      content: "▼";
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.72rem;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .faq-details[open] summary::after {
+      transform: translateY(-50%) rotate(180deg);
+      color: var(--accent);
+    }
+
+    .faq-details p {
+      margin: 0;
+      padding: 0 18px 18px;
+      color: var(--muted);
+      line-height: 1.8;
+      border-top: 1px dashed rgba(76, 58, 39, 0.14);
+    }
+
     .is-hidden {
       display: none !important;
     }
@@ -795,6 +910,19 @@
 
       .result-title {
         display: grid;
+      }
+
+      .seo-howto,
+      .seo-block {
+        padding: 18px;
+      }
+
+      .faq-details summary {
+        padding: 14px 44px 14px 16px;
+      }
+
+      .faq-details p {
+        padding: 0 16px 16px;
       }
     }
   </style>
@@ -918,6 +1046,48 @@
         </details>
       </section>
     </div>
+    <div class="seo-howto">
+      <div class="seo-mini-title">▼ 使い方</div>
+      <ol>
+        <li>基準寸法を入力し、対象となる寸法範囲を確認します。</li>
+        <li>穴と軸の公差クラスを選ぶだけで、H7 や g6 などの組み合わせを簡単に比較できます。</li>
+        <li>はめあい結果として、寸法許容差、すきま・しめしろ、図面転記用の文字列を自動で確認できます。</li>
+      </ol>
+    </div>
+
+    <section class="seo-block">
+      <h2>こんな方におすすめ</h2>
+      <ul>
+        <li>はめあい選定をすばやく確認したい機械設計者</li>
+        <li>CAD へ公差記入を行う CAD オペレーター</li>
+        <li>加工図面や組立図を作成するエンジニア</li>
+        <li>穴基準・軸基準の違いを実務目線で整理したい方</li>
+      </ul>
+    </section>
+
+    <section class="seo-block">
+      <h2>このツールのメリット</h2>
+      <p>設計現場で使いやすいように、JIS 公差表の確認と図面転記をできるだけ短い手順で進められる構成にしています。</p>
+      <ul>
+        <li>分厚い JIS 規格表を毎回引く手間を減らせます。</li>
+        <li>すきま・しめしろを自動計算し、はめあい状態を把握しやすくなります。</li>
+        <li>CAD に入力しやすいテキストコピー機能で図面作成を効率化できます。</li>
+      </ul>
+    </section>
+
+    <section class="seo-block">
+      <h2>よくある質問（FAQ）</h2>
+
+      <details class="faq-details">
+        <summary>Q. 対応している JIS 規格は何ですか？</summary>
+        <p>A. JIS B 0401（寸法公差及びはめあいの方式）に準拠しています。</p>
+      </details>
+
+      <details class="faq-details">
+        <summary>Q. 穴基準・軸基準の切り替えはできますか？</summary>
+        <p>A. はい、よく使われる推奨はめあいを中心にワンクリックで選択・切り替えが可能です。</p>
+      </details>
+    </section>
     <footer class="app-footer">&copy; 2026 Hiro Tools. All rights reserved.</footer>
   </main>
   <footer class="disclaimer">
