@@ -3,11 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>機械設計・CAD製図向けの無料計算ツールまとめ | cad-tools.jp</title>
+  <title>CAD・機械設計ツール TOP | cad-tools.jp</title>
   <meta
     name="description"
     content="cad-tools.jpは、機械設計やCAD製図の実務で使える無料の計算ツールサイトです。金属重量計算やはめあい公差計算など、設計業務を効率化するツールを提供しています。"
   >
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="CAD・機械設計ツール TOP | cad-tools.jp">
+  <meta
+    property="og:description"
+    content="機械設計やCAD製図の実務で使える無料の計算ツールまとめサイト。金属重量計算やはめあい公差計算など、設計業務を効率化するツールを提供しています。"
+  >
+  <meta property="og:url" content="https://cad-tools.jp/">
+  <meta property="og:site_name" content="cad-tools.jp">
+  <meta property="og:image" content="https://cad-tools.jp/ogp-top.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <style>
     :root {
       --panel: rgba(255, 250, 241, 0.92);
@@ -25,6 +37,10 @@
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -35,15 +51,96 @@
         linear-gradient(135deg, #f8f2e7, #efe4d3 52%, #eadcc8);
     }
 
+    a {
+      color: inherit;
+    }
+
+    .global-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(248, 242, 231, 0.78);
+      border-bottom: 1px solid rgba(76, 58, 39, 0.1);
+    }
+
+    .header-inner,
+    .portal {
+      width: min(100%, 1080px);
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255, 248, 238, 0.86);
+      border: 1px solid rgba(155, 61, 34, 0.15);
+      box-shadow: 0 10px 24px rgba(68, 42, 15, 0.08);
+      flex-shrink: 0;
+    }
+
+    .brand-wordmark {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+    }
+
+    .brand-wordmark span {
+      color: var(--accent);
+    }
+
+    .header-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .header-nav a:hover,
+    .header-nav a:focus-visible {
+      background: rgba(155, 61, 34, 0.1);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
     .shell {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 32px 20px;
+      min-height: calc(100vh - 77px);
+      padding: 36px 20px 32px;
     }
 
     .portal {
-      width: min(100%, 1080px);
       display: grid;
       gap: 28px;
     }
@@ -58,6 +155,7 @@
     .hero {
       display: grid;
       gap: 12px;
+      padding: 18px 0 4px;
     }
 
     .eyebrow {
@@ -118,6 +216,11 @@
       box-shadow: 0 28px 72px rgba(68, 42, 15, 0.16);
     }
 
+    .tool-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .tool-meta {
       display: inline-flex;
       align-items: center;
@@ -140,42 +243,110 @@
     }
 
     .tool-card p {
-      margin: 0 0 22px;
+      margin: 0;
       line-height: 1.8;
       color: var(--muted);
     }
 
-    .tool-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--accent);
+    .card-link {
+      color: inherit;
       text-decoration: none;
-      font-weight: 700;
     }
 
-    .tool-link:hover,
-    .tool-link:focus-visible {
-      color: #7c2f18;
+    .card-link::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border-radius: inherit;
     }
 
-    .tool-link span:last-child {
-      transition: transform 180ms ease;
+    .card-link:focus-visible::after {
+      outline: 2px solid rgba(155, 61, 34, 0.7);
+      outline-offset: -6px;
     }
 
-    .tool-link:hover span:last-child,
-    .tool-link:focus-visible span:last-child {
-      transform: translateX(3px);
+    .site-map {
+      display: grid;
+      gap: 14px;
+      padding: 18px 20px 0;
+      border-top: 1px solid rgba(76, 58, 39, 0.12);
+      color: var(--muted);
+    }
+
+    .site-map-label {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .site-map-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 0.92rem;
+    }
+
+    .site-map-list a,
+    .site-map-item-muted {
+      text-decoration: none;
+      color: var(--muted);
+    }
+
+    .site-map-list a:hover,
+    .site-map-list a:focus-visible {
+      color: var(--accent);
+    }
+
+    .site-map-item-muted {
+      opacity: 0.8;
     }
 
     .footer {
       color: var(--muted);
       font-size: 0.92rem;
+      padding-bottom: 8px;
+    }
+
+    @media (max-width: 720px) {
+      .header-inner {
+        padding: 14px 16px;
+      }
+
+      .brand-wordmark {
+        font-size: 1.05rem;
+      }
+
+      .header-nav {
+        gap: 6px;
+      }
+
+      .header-nav a {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
     }
 
     @media (max-width: 640px) {
       .shell {
-        padding: 24px 16px;
+        padding: 24px 16px 28px;
+      }
+
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .header-nav {
+        width: 100%;
+        justify-content: flex-start;
       }
 
       .tool-card {
@@ -187,15 +358,41 @@
       .tool-card p {
         line-height: 1.7;
       }
+
+      .site-map {
+        padding: 16px 4px 0;
+      }
+
+      .site-map-list {
+        gap: 8px 14px;
+        font-size: 0.88rem;
+      }
     }
   </style>
 </head>
 <body>
+  <header class="global-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="cad-tools.jp トップページ">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b3d22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </span>
+        <span class="brand-wordmark">CAD-TOOLS<span>.JP</span></span>
+      </a>
+      <nav class="header-nav" aria-label="グローバルナビゲーション">
+        <a href="/metal-weight-calc/">金属重量</a>
+        <a href="/fit-tolerance-calc/">はめあい公差</a>
+      </nav>
+    </div>
+  </header>
+
   <main class="shell">
     <section class="portal" aria-label="cad-tools.jp portal">
       <header class="hero">
-        <p class="eyebrow">cad-tools.jp</p>
-        <h1>機械設計・CAD製図向けの無料計算ツールまとめ</h1>
+        <h1>CAD設計ツール 一覧</h1>
         <p class="lead">
           cad-tools.jp は、機械設計やCAD製図の実務で使える無料の計算ツールまとめサイトです。金属の重量計算や、JIS規格に準拠したはめあい公差の算出など、設計業務や見積作業で頻繁に発生する面倒な計算をブラウザ上で素早く実行できます。
         </p>
@@ -209,35 +406,26 @@
           <div class="tool-meta">Featured Tool</div>
           <h2>金属重量計算ツール</h2>
           <p>JIS規格に基づいた鋼板・丸鋼・平鋼の重量計算。現場での材料選定や見積に最適。</p>
-          <a class="tool-link" href="./metal-weight-calc/">
-            <span>ツールを開く</span>
-            <span aria-hidden="true">→</span>
-          </a>
+          <a class="card-link" href="./metal-weight-calc/" aria-label="金属重量計算ツールを開く"></a>
         </article>
         <article class="tool-card">
           <div class="tool-meta">New Tool</div>
           <h2>はめあい公差計算ツール</h2>
           <p>JIS B 0401準拠。基準寸法と公差域クラスを入力するだけで、軸と穴の寸法許容差、隙間、締め代を即座に計算。CAD入力用のテキストも生成できます。</p>
-          <a class="tool-link" href="./fit-tolerance-calc/">
-            <span>ツールを開く</span>
-            <span aria-hidden="true">→</span>
-          </a>
+          <a class="card-link" href="./fit-tolerance-calc/" aria-label="はめあい公差計算ツールを開く"></a>
         </article>
       </section>
 
-      <section aria-labelledby="tool-list-heading">
-        <h2 id="tool-list-heading">CAD・機械設計ツール一覧</h2>
-        <ul>
-          <li><a class="tool-link" href="/metal-weight-calc/">金属重量計算ツール</a></li>
-          <li><a class="tool-link" href="/fit-tolerance-calc/">はめあい公差計算ツール</a></li>
-          <li>ボルト締結トルク計算（準備中）</li>
-          <li>ねじ下穴径計算（準備中）</li>
+      <section class="site-map" aria-labelledby="site-map-heading">
+        <p class="site-map-label" id="site-map-heading">Site Map</p>
+        <ul class="site-map-list">
+          <li><a href="/metal-weight-calc/">金属重量計算ツール</a></li>
+          <li><a href="/fit-tolerance-calc/">はめあい公差計算ツール</a></li>
+          <li><span class="site-map-item-muted">キー溝公差計算ツール（準備中）</span></li>
+          <li><span class="site-map-item-muted">ボルト穴・ネジ下穴表示ツール（準備中）</span></li>
+          <li><span class="site-map-item-muted">安全率・たわみ計算ツール（準備中）</span></li>
         </ul>
       </section>
-
-      <footer class="footer">
-        機械設計やCAD製図に役立つ実務ツールを順次追加予定です。
-      </footer>
     </section>
   </main>
 </body>
