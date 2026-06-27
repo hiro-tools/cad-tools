@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="軸径から JIS B 1301:1996 平行キーのキー溝幅・深さ寸法を確認し、標準 / AutoCAD / CADSUPER の公差表記をコピーできます。">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cad-tools.jp/keyway-tolerance-calc/">
+  <title>キー溝公差計算ツール</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="キー溝公差計算ツール">
+  <meta property="og:description" content="軸径から JIS B 1301:1996 平行キーのキー溝幅・深さ寸法を確認し、CAD 用の公差表記を生成します。">
+  <meta property="og:url" content="https://cad-tools.jp/keyway-tolerance-calc/">
+  <meta property="og:site_name" content="キー溝公差計算ツール">
+  <meta property="og:image" content="ogp-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.ico">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "キー溝公差計算ツール",
+      "url": "https://cad-tools.jp/keyway-tolerance-calc/",
+      "description": "JIS B 1301:1996 の平行キーを対象に、軸径からキー溝の幅公差と深さ寸法を確認できる無料ブラウザツールです。",
+      "applicationCategory": "EngineeringApplication",
+      "operatingSystem": "Any",
+      "keywords": "キー溝, キー公差, JIS B 1301, 平行キー, AutoCAD, CADSUPER",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --panel: rgba(255, 250, 241, 0.92);
+      --panel-strong: #fff8ee;
+      --panel-soft: rgba(255, 252, 247, 0.9);
+      --ink: #1d1a16;
+      --muted: #675d50;
+      --line: rgba(76, 58, 39, 0.14);
+      --accent: #9b3d22;
+      --shadow: 0 20px 50px rgba(68, 42, 15, 0.12);
+      --radius: 22px;
+      --font-ui: "Aptos", "Yu Gothic UI", sans-serif;
+      --font-display: "BIZ UDPMincho", "HGS明朝E", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: var(--font-ui);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(217, 155, 78, 0.22), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(155, 61, 34, 0.18), transparent 24%),
+        linear-gradient(135deg, #f8f2e7, #efe4d3 52%, #eadcc8);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(95, 71, 34, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(95, 71, 34, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: radial-gradient(circle at center, black 35%, transparent 88%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .global-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(248, 242, 231, 0.78);
+      border-bottom: 1px solid rgba(76, 58, 39, 0.1);
+    }
+
+    .header-inner,
+    .page-breadcrumb {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(255, 248, 238, 0.86);
+      border: 1px solid rgba(155, 61, 34, 0.15);
+      box-shadow: 0 10px 24px rgba(68, 42, 15, 0.08);
+      flex-shrink: 0;
+    }
+
+    .brand-wordmark {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--ink);
+    }
+
+    .brand-wordmark span {
+      color: var(--accent);
+    }
+
+    .header-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    }
+
+    .header-nav a:hover,
+    .header-nav a:focus-visible {
+      background: rgba(155, 61, 34, 0.1);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .page-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 18px;
+      color: rgba(29, 26, 22, 0.62);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .page-breadcrumb ol {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .page-breadcrumb li {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-breadcrumb li + li::before {
+      content: ">";
+      color: rgba(29, 26, 22, 0.4);
+    }
+
+    .page-breadcrumb a {
+      text-decoration: none;
+    }
+
+    .page-breadcrumb a:hover,
+    .page-breadcrumb a:focus-visible {
+      color: var(--accent);
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 20px auto 36px;
+      display: grid;
+      gap: 18px;
+      animation: rise 0.55s ease-out;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -50px;
+      top: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 155, 78, 0.42), transparent 70%);
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0.04em;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-meta,
+    .current-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hero-meta {
+      margin-top: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 248, 238, 0.82);
+      border: 1px solid rgba(155, 61, 34, 0.12);
+      font-size: 0.92rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(340px, 0.78fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .layout > *,
+    .stack,
+    .result-panel {
+      min-width: 0;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
+
+    .subtle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .number-wrap,
+    .selection-block {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid rgba(89, 62, 35, 0.18);
+      border-radius: 14px;
+      background: rgba(255, 252, 247, 0.88);
+      color: var(--ink);
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid rgba(155, 61, 34, 0.2);
+      border-color: rgba(155, 61, 34, 0.45);
+    }
+
+    .adjust-row,
+    .mode-row,
+    .key-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .adjust-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      justify-content: stretch;
+      align-self: end;
+    }
+
+    .mode-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .key-grid {
+      grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    }
+
+    .adjust-btn,
+    .mode-btn,
+    .key-btn,
+    .ghost-btn {
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--ink);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .adjust-btn:hover,
+    .mode-btn:hover,
+    .key-btn:hover,
+    .ghost-btn:hover,
+    .copy-inline:hover {
+      transform: translateY(-1px);
+      border-color: rgba(155, 61, 34, 0.4);
+      box-shadow: 0 12px 30px rgba(78, 52, 26, 0.08);
+    }
+
+    .adjust-btn,
+    .ghost-btn {
+      padding: 10px 14px;
+    }
+
+    .mode-btn,
+    .key-btn {
+      padding: 14px 16px;
+      text-align: left;
+    }
+
+    .mode-btn strong,
+    .key-btn strong {
+      display: block;
+      font-size: 0.96rem;
+    }
+
+    .mode-btn span,
+    .key-btn span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .key-btn .key-status-badge {
+      display: inline-block;
+      margin-left: 0.35em;
+      color: #b42318;
+      font-size: 0.74rem;
+      font-weight: 800;
+      vertical-align: baseline;
+    }
+
+    .mode-btn.active,
+    .key-btn.active {
+      background: linear-gradient(135deg, rgba(155, 61, 34, 0.1), rgba(217, 155, 78, 0.18));
+      border-color: rgba(155, 61, 34, 0.55);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .current-summary {
+      margin: 0 0 14px;
+    }
+
+    .summary-tag,
+    .badge {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(255, 251, 245, 0.88);
+      border: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .summary-tag strong {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    .result-panel {
+      position: sticky;
+      top: 18px;
+    }
+
+    .result-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .fit-state {
+      margin: 14px 0 16px;
+      padding: 16px;
+      border-radius: 18px;
+      color: #fff7ef;
+      background: linear-gradient(135deg, #8c5c12, #c99a3f);
+    }
+
+    .fit-state.ok {
+      background: linear-gradient(135deg, #275844, #4f8b6b);
+    }
+
+    .fit-state strong {
+      display: block;
+      font-size: 1.08rem;
+      margin-bottom: 4px;
+    }
+
+    .result-cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .primary-dimension-card {
+      background: rgba(255, 252, 247, 0.96);
+    }
+
+    .dimension-sides {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .dimension-side {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 251, 245, 0.78);
+      display: grid;
+      gap: 8px;
+    }
+
+    .dimension-side-title {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .dimension-main {
+      display: grid;
+      gap: 8px;
+      font-size: 1.16rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.35;
+    }
+
+    .dimension-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 8px;
+    }
+
+    .dimension-label {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .dimension-main .copy-target-wrap {
+      align-items: center;
+    }
+
+    .dimension-main .inline-value {
+      font-size: inherit;
+      font-weight: inherit;
+    }
+
+    .standard-stack-value,
+    .standard-plusminus-value {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .standard-base {
+      font-size: 1.05em;
+      font-weight: 800;
+    }
+
+    .standard-tolerance-stack {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      align-items: center;
+      font-size: 0.72em;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .standard-upper,
+    .standard-lower {
+      display: inline-grid;
+      grid-template-columns: 0.72em auto;
+      align-items: baseline;
+      column-gap: 0.02em;
+      white-space: nowrap;
+    }
+
+    .tol-sign {
+      display: inline-block;
+      width: 0.72em;
+      text-align: center;
+    }
+
+    .tol-body {
+      display: inline-block;
+      text-align: left;
+    }
+
+    .standard-plusminus {
+      display: inline-block;
+      font-size: 0.82em;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .standard-dimension-value {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .copy-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .copy-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 100%;
+      border: 1px solid rgba(89, 62, 35, 0.22);
+      background: rgba(255, 252, 247, 0.96);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .copy-chip:hover,
+    .copy-chip:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(155, 61, 34, 0.45);
+      background: rgba(255, 248, 238, 1);
+      box-shadow: 0 8px 18px rgba(78, 52, 26, 0.08);
+    }
+
+    .copy-chip-label {
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 800;
+    }
+
+    .copy-chip-value {
+      overflow: hidden;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-chip-cad {
+      background: rgba(255, 248, 238, 0.98);
+    }
+
+    .standard-detail-output {
+      display: grid;
+      gap: 6px;
+    }
+
+    .support-card {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 251, 245, 0.74);
+    }
+
+    .radius-reference {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 252, 247, 0.72);
+    }
+
+    .radius-range-line,
+    .radius-guide {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .radius-reference-label,
+    .radius-reference-note {
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .radius-range-value,
+    .radius-guide-value {
+      font-size: 0.98rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .radius-guide {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(217, 155, 78, 0.12);
+    }
+
+    .key-diagram {
+      margin: 0 0 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 252, 247, 0.78);
+      overflow-x: auto;
+    }
+
+    .key-diagram-inner {
+      display: grid;
+      gap: 12px;
+      min-width: 560px;
+    }
+
+    .diagram-svg-wrap svg,
+    .key-diagram svg {
+      display: block;
+      width: 100%;
+      min-width: 560px;
+      height: auto;
+    }
+
+    .diagram-line {
+      stroke: rgba(29, 26, 22, 0.72);
+      stroke-width: 1.6;
+      fill: none;
+    }
+
+    .diagram-dimension {
+      stroke: rgba(29, 26, 22, 0.64);
+      stroke-width: 1.35;
+      fill: none;
+    }
+
+    .diagram-cut {
+      fill: rgba(255, 252, 247, 0.98);
+      stroke: rgba(155, 61, 34, 0.72);
+      stroke-width: 1.7;
+    }
+
+    .diagram-hub {
+      fill: rgba(46, 107, 138, 0.12);
+      stroke: rgba(46, 107, 138, 0.55);
+      stroke-width: 1.5;
+    }
+
+    .diagram-shaft {
+      fill: rgba(92, 120, 128, 0.16);
+      stroke: rgba(43, 67, 72, 0.6);
+      stroke-width: 1.8;
+    }
+
+    .diagram-hole {
+      fill: rgba(255, 252, 247, 0.98);
+      stroke: rgba(43, 67, 72, 0.58);
+      stroke-width: 1.6;
+    }
+
+    .diagram-construction {
+      stroke: rgba(29, 26, 22, 0.22);
+      stroke-width: 1.1;
+      stroke-dasharray: 4 4;
+      fill: none;
+    }
+
+    .diagram-cut-boundary {
+      stroke: rgba(29, 26, 22, 0.28);
+      stroke-width: 1.15;
+      stroke-dasharray: 5 4;
+      fill: none;
+    }
+
+    .diagram-radius {
+      stroke: rgba(155, 61, 34, 0.64);
+      stroke-width: 1.55;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .diagram-radius-leader {
+      stroke: rgba(155, 61, 34, 0.46);
+      stroke-width: 1.1;
+      stroke-dasharray: 3 3;
+      fill: none;
+    }
+
+    .diagram-label {
+      fill: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .diagram-note {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+
+    .diagram-measure-note {
+      fill: var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .result-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      display: grid;
+      gap: 12px;
+    }
+
+    .result-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-card-header strong {
+      font-size: 1rem;
+    }
+
+    .result-lines {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-line {
+      display: grid;
+      gap: 6px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(89, 62, 35, 0.14);
+    }
+
+    .result-line:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .result-line-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .inline-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .copy-target-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .copy-target-wrap:hover {
+      background: rgba(217, 155, 78, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(155, 61, 34, 0.08);
+    }
+
+    .inline-value {
+      font-size: 1.02rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+
+    .inline-value.mono {
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-weight: 600;
+    }
+
+    .copy-inline {
+      border: 1px solid rgba(89, 62, 35, 0.18);
+      background: rgba(255, 252, 247, 0.96);
+      color: var(--muted);
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      line-height: 1;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .detail-panel {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255, 252, 247, 0.78);
+    }
+
+    .detail-panel summary {
+      cursor: pointer;
+      padding: 16px 18px;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .detail-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .detail-content {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .detail-box {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 251, 245, 0.88);
+      display: grid;
+      gap: 8px;
+    }
+
+    .detail-box strong {
+      font-size: 0.9rem;
+    }
+
+    .detail-box dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    .detail-box dt {
+      color: var(--muted);
+    }
+
+    .detail-box dd {
+      margin: 0;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .detail-copy-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .footnote {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+      margin: 20px 0 0;
+      text-align: left;
+    }
+
+    .seo-howto,
+    .seo-block {
+      padding: 18px 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .seo-mini-title {
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .seo-howto ol,
+    .seo-block ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.8;
+    }
+
+    .seo-block h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
+
+    .seo-block p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .faq-details {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 252, 247, 0.72);
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .faq-details summary {
+      cursor: pointer;
+      padding: 16px 18px;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .faq-details p {
+      margin: 0;
+      padding: 0 18px 18px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .app-footer,
+    .disclaimer {
+      color: rgba(29, 26, 22, 0.62);
+      font-size: 0.82rem;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .disclaimer {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto 36px;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .result-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .header-inner,
+      .page-breadcrumb,
+      .app,
+      .disclaimer {
+        width: auto;
+        max-width: none;
+      }
+
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        margin-left: 14px;
+        margin-right: 14px;
+      }
+
+      .page-breadcrumb,
+      .disclaimer {
+        margin-left: 14px;
+        margin-right: 14px;
+      }
+
+      .brand-wordmark {
+        font-size: 1.05rem;
+      }
+
+      .header-nav {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 6px;
+      }
+
+      .header-nav a {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+
+      .app {
+        margin: 10px 9px 26px;
+      }
+
+      .hero,
+      .panel {
+        padding: 18px;
+      }
+
+      .input-row,
+      .mode-row,
+      .dimension-sides,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .adjust-row {
+        justify-content: stretch;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .key-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result-title {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="global-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="cad-tools.jp トップページ">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9b3d22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </span>
+        <span class="brand-wordmark">CAD-TOOLS<span>.JP</span></span>
+      </a>
+      <nav class="header-nav" aria-label="グローバルナビゲーション">
+        <a href="/metal-weight-calc/">金属重量</a>
+        <a href="/fit-tolerance-calc/">はめあい公差</a>
+        <a href="/keyway-tolerance-calc/">キー溝公差</a>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="page-breadcrumb" aria-label="パンくずリスト">
+    <ol>
+      <li><a href="/">ホーム</a></li>
+      <li aria-current="page">キー溝公差計算ツール</li>
+    </ol>
+  </nav>
+
+  <main class="app">
+    <section class="hero">
+      <h1>キー溝公差計算ツール</h1>
+      <p>軸径から平行キーの呼び寸法とキー溝幅公差を確認し、図面用の文字列として生成するツールです。</p>
+      <div class="hero-meta">
+        <div class="chip">対象規格: JIS B 1301:1996 平行キー</div>
+        <div class="chip">幅公差: ISO 286 / JIS B 0401</div>
+        <div class="chip">出力: 標準 / AutoCAD / CADSUPER</div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="stack">
+        <section class="panel">
+          <h2>適用軸径</h2>
+          <div class="input-row">
+            <div class="number-wrap">
+              <label for="diameterInput">軸径 d [mm]</label>
+              <input id="diameterInput" type="number" min="6" max="500" step="0.001" value="30">
+            </div>
+            <div class="adjust-row">
+              <button class="adjust-btn" type="button" data-adjust="100">+100</button>
+              <button class="adjust-btn" type="button" data-adjust="10">+10</button>
+              <button class="adjust-btn" type="button" data-adjust="1">+1</button>
+              <button class="adjust-btn" type="button" data-adjust="-100">-100</button>
+              <button class="adjust-btn" type="button" data-adjust="-10">-10</button>
+              <button class="adjust-btn" type="button" data-adjust="-1">-1</button>
+            </div>
+          </div>
+          <p class="subtle" id="diameterStatus"></p>
+        </section>
+
+        <section class="panel">
+          <h2>はめあい区分</h2>
+          <div class="mode-row" role="tablist" aria-label="はめあい区分">
+            <button class="mode-btn" type="button" data-fit="sliding">
+              <strong>滑動形</strong>
+              <span>軸側 H9 / ハブ側 D10</span>
+            </button>
+            <button class="mode-btn active" type="button" data-fit="normal">
+              <strong>普通形</strong>
+              <span>軸側 N9 / ハブ側 JS9</span>
+            </button>
+            <button class="mode-btn" type="button" data-fit="close">
+              <strong>締込み形</strong>
+              <span>軸側 P9 / ハブ側 P9</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>キーの呼び寸法</h2>
+          <div class="current-summary" id="keySummary"></div>
+          <div class="selection-block">
+            <label for="keyGrid">候補</label>
+            <div class="key-grid" id="keyGrid"></div>
+          </div>
+          <div class="toolbar">
+            <button class="ghost-btn" id="showAllKeysButton" type="button">もっと見る</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel result-panel">
+        <div class="result-title">
+          <div>
+            <h2>出力結果</h2>
+          </div>
+        </div>
+
+        <div class="fit-state" id="fitState"></div>
+        <div class="key-diagram" id="keyDiagram" aria-label="キー溝寸法の図解"></div>
+        <div class="result-cards" id="resultCards"></div>
+
+        <details class="detail-panel">
+          <summary>キー本体幅と計算詳細を見る</summary>
+          <div class="detail-content">
+            <div class="detail-grid" id="detailGrid"></div>
+            <p class="footnote">※ 幅公差は呼び幅 b を基準に決まります。軸径 d を基準にはしません。</p>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <div class="seo-howto">
+      <div class="seo-mini-title">▼ 使い方</div>
+      <ol>
+        <li>適用軸径 d を入力すると、JIS表に基づく推奨キー寸法を自動選択します。必要に応じて候補から別のキー寸法も選べます。</li>
+        <li>滑動形・普通形・締込み形を選ぶと、軸側とハブ側のキー溝幅公差を切り替えます。</li>
+        <li>候補ボタンから呼び寸法を選び、必要なCAD用表記をコピーできます。</li>
+      </ol>
+    </div>
+
+    <section class="seo-block">
+      <h2>対象とするキー</h2>
+      <p>JIS B 1301:1996 の平行キーを対象にした計算ツールです。こう配キー、半月キー、メーカー独自仕様は対象外です。</p>
+    </section>
+
+    <section class="seo-block">
+      <h2>よくある質問（FAQ）</h2>
+      <details class="faq-details">
+        <summary>Q. キーのサイズは軸径で決まりますか？</summary>
+        <p>A. JISでは軸径ごとに推奨されるキー寸法があります。ただし、設計条件によっては標準外のキー寸法を選ぶ場合もあります。</p>
+      </details>
+      <details class="faq-details">
+        <summary>Q. キー溝幅の公差は何を基準に決まりますか？</summary>
+        <p>A. キー溝幅の公差は、軸径 d ではなくキーの呼び幅 b を基準に決まります。このツールでは、選択したキー幅 b に対して幅公差を表示します。</p>
+      </details>
+      <details class="faq-details">
+        <summary>Q. かっこ付きのキー寸法は何ですか？</summary>
+        <p>A. ISO非対応の旧JISキー寸法です。既存設備や指定がある場合に使われることがありますが、新規設計では標準寸法を優先してください。</p>
+      </details>
+    </section>
+
+    <footer class="app-footer">&copy; 2026 Hiro Tools. All rights reserved.</footer>
+  </main>
+  <footer class="disclaimer">
+    ※ 本ツールは転記済みデータに基づく補助計算を提供しますが、計算結果を保証するものではありません。最終的な設計・加工指示では、必ず JIS B 1301:1996 および JIS B 0401 の原典をご確認ください。本ツールの利用によるいかなる損害についても責任を負いかねます。
+  </footer>
+
+  <script>
+    const RANGE_TABLE = [
+      { minExclusive: 0, maxInclusive: 3, label: "0 < d <= 3", display: "〜3" },
+      { minExclusive: 3, maxInclusive: 6, label: "3 < d <= 6", display: "3-6" },
+      { minExclusive: 6, maxInclusive: 10, label: "6 < d <= 10", display: "6-10" },
+      { minExclusive: 10, maxInclusive: 14, label: "10 < d <= 14", display: "10-14" },
+      { minExclusive: 14, maxInclusive: 18, label: "14 < d <= 18", display: "14-18" },
+      { minExclusive: 18, maxInclusive: 24, label: "18 < d <= 24", display: "18-24" },
+      { minExclusive: 24, maxInclusive: 30, label: "24 < d <= 30", display: "24-30" },
+      { minExclusive: 30, maxInclusive: 40, label: "30 < d <= 40", display: "30-40" },
+      { minExclusive: 40, maxInclusive: 50, label: "40 < d <= 50", display: "40-50" },
+      { minExclusive: 50, maxInclusive: 65, label: "50 < d <= 65", display: "50-65" },
+      { minExclusive: 65, maxInclusive: 80, label: "65 < d <= 80", display: "65-80" },
+      { minExclusive: 80, maxInclusive: 100, label: "80 < d <= 100", display: "80-100" },
+      { minExclusive: 100, maxInclusive: 120, label: "100 < d <= 120", display: "100-120" },
+      { minExclusive: 120, maxInclusive: 140, label: "120 < d <= 140", display: "120-140" },
+      { minExclusive: 140, maxInclusive: 160, label: "140 < d <= 160", display: "140-160" },
+      { minExclusive: 160, maxInclusive: 180, label: "160 < d <= 180", display: "160-180" },
+      { minExclusive: 180, maxInclusive: 200, label: "180 < d <= 200", display: "180-200" },
+      { minExclusive: 200, maxInclusive: 225, label: "200 < d <= 225", display: "200-225" },
+      { minExclusive: 225, maxInclusive: 250, label: "225 < d <= 250", display: "225-250" },
+      { minExclusive: 250, maxInclusive: 280, label: "250 < d <= 280", display: "250-280" },
+      { minExclusive: 280, maxInclusive: 315, label: "280 < d <= 315", display: "280-315" },
+      { minExclusive: 315, maxInclusive: 355, label: "315 < d <= 355", display: "315-355" },
+      { minExclusive: 355, maxInclusive: 400, label: "355 < d <= 400", display: "355-400" },
+      { minExclusive: 400, maxInclusive: 450, label: "400 < d <= 450", display: "400-450" },
+      { minExclusive: 450, maxInclusive: 500, label: "450 < d <= 500", display: "450-500" }
+    ];
+
+    const KEY_TABLE = [
+      { dMin: 6, dMax: 8, b: 2, h: 2, t1: 1.2, t2: 1.0, depthTol: 0.1, rMin: 0.08, rMax: 0.16, iso: true, note: "", label: "2×2" },
+      { dMin: 8, dMax: 10, b: 3, h: 3, t1: 1.8, t2: 1.4, depthTol: 0.1, rMin: 0.08, rMax: 0.16, iso: true, note: "", label: "3×3" },
+      { dMin: 10, dMax: 12, b: 4, h: 4, t1: 2.5, t2: 1.8, depthTol: 0.1, rMin: 0.08, rMax: 0.16, iso: true, note: "", label: "4×4" },
+      { dMin: 12, dMax: 17, b: 5, h: 5, t1: 3.0, t2: 2.3, depthTol: 0.1, rMin: 0.16, rMax: 0.25, iso: true, note: "", label: "5×5" },
+      { dMin: 17, dMax: 22, b: 6, h: 6, t1: 3.5, t2: 2.8, depthTol: 0.1, rMin: 0.16, rMax: 0.25, iso: true, note: "", label: "6×6" },
+      { dMin: 20, dMax: 25, b: 7, h: 7, t1: 4.0, t2: 3.3, depthTol: 0.2, rMin: 0.16, rMax: 0.25, iso: false, note: "ISO非対応・新設計非推奨", label: "(7×7)" },
+      { dMin: 22, dMax: 30, b: 8, h: 7, t1: 4.0, t2: 3.3, depthTol: 0.2, rMin: 0.16, rMax: 0.25, iso: true, note: "", label: "8×7" },
+      { dMin: 30, dMax: 38, b: 10, h: 8, t1: 5.0, t2: 3.3, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: true, note: "", label: "10×8" },
+      { dMin: 38, dMax: 44, b: 12, h: 8, t1: 5.0, t2: 3.3, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: true, note: "", label: "12×8" },
+      { dMin: 44, dMax: 50, b: 14, h: 9, t1: 5.5, t2: 3.8, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: true, note: "", label: "14×9" },
+      { dMin: 50, dMax: 55, b: 15, h: 10, t1: 5.0, t2: 5.3, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: false, note: "ISO非対応・新設計非推奨", label: "(15×10)" },
+      { dMin: 50, dMax: 58, b: 16, h: 10, t1: 6.0, t2: 4.3, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: true, note: "", label: "16×10" },
+      { dMin: 58, dMax: 65, b: 18, h: 11, t1: 7.0, t2: 4.4, depthTol: 0.2, rMin: 0.25, rMax: 0.40, iso: true, note: "", label: "18×11" },
+      { dMin: 65, dMax: 75, b: 20, h: 12, t1: 7.5, t2: 4.9, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: true, note: "", label: "20×12" },
+      { dMin: 75, dMax: 85, b: 22, h: 14, t1: 9.0, t2: 5.4, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: true, note: "", label: "22×14" },
+      { dMin: 80, dMax: 90, b: 24, h: 16, t1: 8.0, t2: 8.4, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: false, note: "ISO非対応・新設計非推奨", label: "(24×16)" },
+      { dMin: 85, dMax: 95, b: 25, h: 14, t1: 9.0, t2: 5.4, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: true, note: "", label: "25×14" },
+      { dMin: 95, dMax: 110, b: 28, h: 16, t1: 10.0, t2: 6.4, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: true, note: "", label: "28×16" },
+      { dMin: 110, dMax: 130, b: 32, h: 18, t1: 11.0, t2: 7.4, depthTol: 0.2, rMin: 0.40, rMax: 0.60, iso: true, note: "", label: "32×18" },
+      { dMin: 125, dMax: 140, b: 35, h: 22, t1: 11.0, t2: 11.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: false, note: "ISO非対応・新設計非推奨", label: "(35×22)" },
+      { dMin: 130, dMax: 150, b: 36, h: 20, t1: 12.0, t2: 8.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: true, note: "", label: "36×20" },
+      { dMin: 140, dMax: 160, b: 38, h: 24, t1: 12.0, t2: 12.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: false, note: "ISO非対応・新設計非推奨", label: "(38×24)" },
+      { dMin: 150, dMax: 170, b: 40, h: 22, t1: 13.0, t2: 9.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: true, note: "", label: "40×22" },
+      { dMin: 160, dMax: 180, b: 42, h: 26, t1: 13.0, t2: 13.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: false, note: "ISO非対応・新設計非推奨", label: "(42×26)" },
+      { dMin: 170, dMax: 200, b: 45, h: 25, t1: 15.0, t2: 10.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: true, note: "", label: "45×25" },
+      { dMin: 200, dMax: 230, b: 50, h: 28, t1: 17.0, t2: 11.4, depthTol: 0.3, rMin: 0.70, rMax: 1.00, iso: true, note: "", label: "50×28" },
+      { dMin: 230, dMax: 260, b: 56, h: 32, t1: 20.0, t2: 12.4, depthTol: 0.3, rMin: 1.20, rMax: 1.60, iso: true, note: "", label: "56×32" },
+      { dMin: 260, dMax: 290, b: 63, h: 32, t1: 20.0, t2: 12.4, depthTol: 0.3, rMin: 1.20, rMax: 1.60, iso: true, note: "", label: "63×32" },
+      { dMin: 290, dMax: 330, b: 70, h: 36, t1: 22.0, t2: 14.4, depthTol: 0.3, rMin: 1.20, rMax: 1.60, iso: true, note: "", label: "70×36" },
+      { dMin: 330, dMax: 380, b: 80, h: 40, t1: 25.0, t2: 15.4, depthTol: 0.3, rMin: 2.00, rMax: 2.50, iso: true, note: "", label: "80×40" },
+      { dMin: 380, dMax: 440, b: 90, h: 45, t1: 28.0, t2: 17.4, depthTol: 0.3, rMin: 2.00, rMax: 2.50, iso: true, note: "", label: "90×45" },
+      { dMin: 440, dMax: 500, b: 100, h: 50, t1: 31.0, t2: 19.5, depthTol: 0.3, rMin: 2.00, rMax: 2.50, iso: true, note: "", label: "100×50" }
+    ];
+
+    const FIT_CLASSES = {
+      normal: { label: "普通形", shaftZone: "N9", hubZone: "JS9" },
+      sliding: { label: "滑動形", shaftZone: "H9", hubZone: "D10" },
+      close: { label: "締込み形", shaftZone: "P9", hubZone: "P9" }
+    };
+    const KEY_BODY_WIDTH_ZONE = "h9";
+
+    const ISO_WIDTH_TABLE = {
+      "H9": {
+        "〜3": { upper: 25, lower: 0 }, "3-6": { upper: 30, lower: 0 }, "6-10": { upper: 36, lower: 0 },
+        "10-14": { upper: 43, lower: 0 }, "14-18": { upper: 43, lower: 0 }, "18-24": { upper: 52, lower: 0 },
+        "24-30": { upper: 52, lower: 0 }, "30-40": { upper: 62, lower: 0 }, "40-50": { upper: 62, lower: 0 },
+        "50-65": { upper: 74, lower: 0 }, "65-80": { upper: 74, lower: 0 }, "80-100": { upper: 87, lower: 0 },
+        "100-120": { upper: 87, lower: 0 }, "120-140": { upper: 100, lower: 0 }, "140-160": { upper: 100, lower: 0 },
+        "160-180": { upper: 100, lower: 0 }, "180-200": { upper: 115, lower: 0 }, "200-225": { upper: 115, lower: 0 },
+        "225-250": { upper: 115, lower: 0 }, "250-280": { upper: 130, lower: 0 }, "280-315": { upper: 130, lower: 0 },
+        "315-355": { upper: 140, lower: 0 }, "355-400": { upper: 140, lower: 0 }, "400-450": { upper: 155, lower: 0 },
+        "450-500": { upper: 155, lower: 0 }
+      },
+      "D10": {
+        "〜3": { upper: 60, lower: 20 }, "3-6": { upper: 78, lower: 30 }, "6-10": { upper: 98, lower: 40 },
+        "10-14": { upper: 120, lower: 50 }, "14-18": { upper: 120, lower: 50 }, "18-24": { upper: 149, lower: 65 },
+        "24-30": { upper: 149, lower: 65 }, "30-40": { upper: 180, lower: 80 }, "40-50": { upper: 180, lower: 80 },
+        "50-65": { upper: 220, lower: 100 }, "65-80": { upper: 220, lower: 100 }, "80-100": { upper: 260, lower: 120 },
+        "100-120": { upper: 260, lower: 120 }, "120-140": { upper: 305, lower: 145 }, "140-160": { upper: 305, lower: 145 },
+        "160-180": { upper: 305, lower: 145 }, "180-200": { upper: 355, lower: 170 }, "200-225": { upper: 355, lower: 170 },
+        "225-250": { upper: 355, lower: 170 }, "250-280": { upper: 400, lower: 190 }, "280-315": { upper: 400, lower: 190 },
+        "315-355": { upper: 440, lower: 210 }, "355-400": { upper: 440, lower: 210 }, "400-450": { upper: 480, lower: 230 },
+        "450-500": { upper: 480, lower: 230 }
+      },
+      "N9": {
+        "〜3": { upper: -4, lower: -29 }, "3-6": { upper: 0, lower: -30 }, "6-10": { upper: 0, lower: -36 },
+        "10-14": { upper: 0, lower: -43 }, "14-18": { upper: 0, lower: -43 }, "18-24": { upper: 0, lower: -52 },
+        "24-30": { upper: 0, lower: -52 }, "30-40": { upper: 0, lower: -62 }, "40-50": { upper: 0, lower: -62 },
+        "50-65": { upper: 0, lower: -74 }, "65-80": { upper: 0, lower: -74 }, "80-100": { upper: 0, lower: -87 },
+        "100-120": { upper: 0, lower: -87 }, "120-140": { upper: 0, lower: -100 }, "140-160": { upper: 0, lower: -100 },
+        "160-180": { upper: 0, lower: -100 }, "180-200": { upper: 0, lower: -115 }, "200-225": { upper: 0, lower: -115 },
+        "225-250": { upper: 0, lower: -115 }, "250-280": { upper: 0, lower: -130 }, "280-315": { upper: 0, lower: -130 },
+        "315-355": { upper: 0, lower: -140 }, "355-400": { upper: 0, lower: -140 }, "400-450": { upper: 0, lower: -155 },
+        "450-500": { upper: 0, lower: -155 }
+      },
+      "P9": {
+        "〜3": { upper: -6, lower: -31 }, "3-6": { upper: -12, lower: -42 }, "6-10": { upper: -15, lower: -51 },
+        "10-14": { upper: -18, lower: -61 }, "14-18": { upper: -18, lower: -61 }, "18-24": { upper: -22, lower: -74 },
+        "24-30": { upper: -22, lower: -74 }, "30-40": { upper: -26, lower: -88 }, "40-50": { upper: -26, lower: -88 },
+        "50-65": { upper: -32, lower: -106 }, "65-80": { upper: -32, lower: -106 }, "80-100": { upper: -37, lower: -124 },
+        "100-120": { upper: -37, lower: -124 }, "120-140": { upper: -43, lower: -143 }, "140-160": { upper: -43, lower: -143 },
+        "160-180": { upper: -43, lower: -143 }, "180-200": { upper: -50, lower: -165 }, "200-225": { upper: -50, lower: -165 },
+        "225-250": { upper: -50, lower: -165 }, "250-280": { upper: -56, lower: -186 }, "280-315": { upper: -56, lower: -186 },
+        "315-355": { upper: -62, lower: -202 }, "355-400": { upper: -62, lower: -202 }, "400-450": { upper: -68, lower: -223 },
+        "450-500": { upper: -68, lower: -223 }
+      },
+      "h9": {}
+    };
+
+    Object.keys(ISO_WIDTH_TABLE.H9).forEach((rangeKey) => {
+      const h9Tolerance = ISO_WIDTH_TABLE.H9[rangeKey].upper;
+      ISO_WIDTH_TABLE.h9[rangeKey] = { upper: 0, lower: -h9Tolerance };
+    });
+
+    const state = {
+      diameter: 30,
+      fit: "normal",
+      selectedKeyIndex: null,
+      showAllKeys: false
+    };
+
+    const elements = {
+      diameterInput: document.getElementById("diameterInput"),
+      diameterStatus: document.getElementById("diameterStatus"),
+      fitButtons: Array.from(document.querySelectorAll("[data-fit]")),
+      keySummary: document.getElementById("keySummary"),
+      keyGrid: document.getElementById("keyGrid"),
+      showAllKeysButton: document.getElementById("showAllKeysButton"),
+      fitState: document.getElementById("fitState"),
+      keyDiagram: document.getElementById("keyDiagram"),
+      resultCards: document.getElementById("resultCards"),
+      detailGrid: document.getElementById("detailGrid")
+    };
+
+    function stripTrailingZeros(value) {
+      return value.replace(/\.?0+$/, "");
+    }
+
+    function formatNumber(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return "-";
+      }
+      return stripTrailingZeros(Number(value).toFixed(3));
+    }
+
+    function micronToMillimeter(valueMicrons) {
+      return valueMicrons / 1000;
+    }
+
+    function formatDeviation(valueMicrons) {
+      if (valueMicrons === 0) {
+        return "0";
+      }
+      const value = micronToMillimeter(valueMicrons);
+      return (value > 0 ? "+" : "") + value.toFixed(3);
+    }
+
+    function formatStackValue(valueMicrons) {
+      return valueMicrons === 0 ? " 0" : formatDeviation(valueMicrons);
+    }
+
+    function formatMicronValue(valueMicrons) {
+      if (valueMicrons > 0) {
+        return "+" + valueMicrons;
+      }
+      if (valueMicrons === 0) {
+        return "0";
+      }
+      return String(valueMicrons);
+    }
+
+    function formatSizeLimit(baseSize, deviationMicrons) {
+      return (baseSize + micronToMillimeter(deviationMicrons)).toFixed(3);
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function clampDiameter(value) {
+      const min = Math.min(...KEY_TABLE.map((row) => row.dMin));
+      const max = Math.max(...KEY_TABLE.map((row) => row.dMax));
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return 30;
+      }
+      return Math.min(max, Math.max(min, Number(numeric.toFixed(3))));
+    }
+
+    function clampAdjustedDiameter(value) {
+      return clampDiameter(value);
+    }
+
+    function isDiameterInRow(row, diameter) {
+      const firstRow = row === KEY_TABLE[0];
+      return (firstRow ? diameter >= row.dMin : diameter > row.dMin) && diameter <= row.dMax;
+    }
+
+    function getPrimaryKeyIndex(diameter) {
+      const standardIndex = KEY_TABLE.findIndex((row) => row.iso && isDiameterInRow(row, diameter));
+      if (standardIndex !== -1) {
+        return standardIndex;
+      }
+      return KEY_TABLE.findIndex((row) => isDiameterInRow(row, diameter));
+    }
+
+    function getRecommendedKeyIndex(diameter) {
+      return getPrimaryKeyIndex(diameter);
+    }
+
+    function isRecommendedKeyForDiameter(row, diameter) {
+      const recommendedIndex = getRecommendedKeyIndex(diameter);
+      return recommendedIndex !== -1 && row === KEY_TABLE[recommendedIndex];
+    }
+
+    function getKeyStateLabel(row, diameter) {
+      if (!row) {
+        return "表なし";
+      }
+      if (isRecommendedKeyForDiameter(row, diameter)) {
+        return "推奨";
+      }
+      if (!isDiameterInRow(row, diameter)) {
+        return "軸径推奨外";
+      }
+      return row.iso ? "標準" : "旧JISキー";
+    }
+
+    function getCurrentKeyRow() {
+      if (state.selectedKeyIndex !== null && KEY_TABLE[state.selectedKeyIndex]) {
+        return KEY_TABLE[state.selectedKeyIndex];
+      }
+      const primaryIndex = getPrimaryKeyIndex(state.diameter);
+      return primaryIndex === -1 ? null : KEY_TABLE[primaryIndex];
+    }
+
+    function getKeyIndex(row) {
+      return KEY_TABLE.indexOf(row);
+    }
+
+    function getToleranceRange(nominal) {
+      return RANGE_TABLE.find((range) => nominal > range.minExclusive && nominal <= range.maxInclusive) || null;
+    }
+
+    function getZone(nominal, zoneSymbol) {
+      const range = getToleranceRange(nominal);
+      if (!range) {
+        return { available: false, message: "適用範囲外" };
+      }
+
+      if (zoneSymbol === "JS9") {
+        const h9 = ISO_WIDTH_TABLE.H9[range.display];
+        if (!h9) {
+          return { available: false, message: "表に値がありません", range };
+        }
+        const half = h9.upper / 2;
+        return { available: true, upper: half, lower: -half, tolerance: h9.upper, range };
+      }
+
+      const zoneTable = ISO_WIDTH_TABLE[zoneSymbol];
+      if (zoneTable && zoneTable[range.display]) {
+        const zone = zoneTable[range.display];
+        return { available: true, upper: zone.upper, lower: zone.lower, tolerance: zone.upper - zone.lower, range };
+      }
+
+      return { available: false, message: "表に値がありません", range };
+    }
+
+    function getSourceLabel(row) {
+      if (!row) {
+        return "表なし";
+      }
+      return row.iso ? "標準" : "旧JISキー";
+    }
+
+    function getKeyLabel(row) {
+      return row ? row.label || row.b + "×" + row.h : "表に値がありません";
+    }
+
+    function getRangeText(row) {
+      if (!row) {
+        return "-";
+      }
+      return (row === KEY_TABLE[0] ? row.dMin + " <= d <= " : row.dMin + " < d <= ") + row.dMax;
+    }
+
+    function getCandidateStatusText(row, diameter) {
+      const stateLabel = getKeyStateLabel(row, diameter);
+      const rangeText = stateLabel === "軸径推奨外" ? "適用軸径 " + getRangeText(row) : getRangeText(row);
+      const parts = ["状態 " + stateLabel, rangeText];
+      if (row && !row.iso && row.note) {
+        parts.push(row.note);
+      }
+      return parts.join(" / ");
+    }
+
+    function getCandidateBadgeLabel(row, diameter) {
+      const stateLabel = getKeyStateLabel(row, diameter);
+      return stateLabel === "推奨" ? "推奨" : "";
+    }
+
+    function getCandidateSubText(row) {
+      if (!row) {
+        return "";
+      }
+      if (!row.iso && row.note) {
+        return row.note;
+      }
+      return getRangeText(row);
+    }
+
+    function getRadiusText(row) {
+      if (!row) {
+        return "-";
+      }
+      return Number(row.rMin).toFixed(2) + "〜" + Number(row.rMax).toFixed(2);
+    }
+
+    function getRadiusToolGuide(rMin, rMax) {
+      const guideMap = {
+        "0.08〜0.16": { text: "R0.1", note: "（加工目安）" },
+        "0.16〜0.25": { text: "R0.2", note: "（加工目安）" },
+        "0.25〜0.4": { text: "R0.3 / R0.4", note: "など範囲内で選定" },
+        "0.4〜0.6": { text: "R0.5", note: "（加工目安）" },
+        "0.7〜1": { text: "R0.8 / R1.0", note: "など範囲内で選定" },
+        "1.2〜1.6": { text: "R1.5", note: "（加工目安）" },
+        "2〜2.5": { text: "R2.0 / R2.5", note: "など範囲内で選定" }
+      };
+      const key = formatNumber(rMin) + "〜" + formatNumber(rMax);
+      return guideMap[key] || { text: "範囲内で選定", note: "（カタログ値を確認）" };
+    }
+
+    function buildCopyButton(value, label, extraClass) {
+      const buttonLabel = label || "Copy";
+      const className = "copy-inline" + (extraClass ? " " + extraClass : "");
+      return "<button class=\"" + className + "\" type=\"button\" data-copy=\"" + escapeHtml(value) + "\" data-default-label=\"" + escapeHtml(buttonLabel) + "\">" + escapeHtml(buttonLabel) + "</button>";
+    }
+
+    function buildResultLine(label, fragments, mono) {
+      return [
+        "<div class=\"result-line\">",
+        "<div class=\"result-line-label\">", escapeHtml(label), "</div>",
+        "<div class=\"inline-group\">",
+        fragments.map((fragment) => {
+          return "<span class=\"copy-target-wrap\" data-copy-value=\"" + escapeHtml(fragment.copy) + "\"><span class=\"inline-value" + (mono ? " mono" : "") + "\">" + escapeHtml(fragment.value) + "</span>" + buildCopyButton(fragment.copy) + "</span>";
+        }).join(""),
+        "</div>",
+        "</div>"
+      ].join("");
+    }
+
+    function formatBracketPart(valueMicrons) {
+      if (valueMicrons === 0) {
+        return " 0";
+      }
+      return formatDeviation(valueMicrons);
+    }
+
+    function formatBracketTolerance(zone) {
+      return "[" + formatBracketPart(zone.upper) + "_" + formatBracketPart(zone.lower) + "]";
+    }
+
+    function formatSymmetricTolerance(zone) {
+      return "±" + Math.abs(micronToMillimeter(zone.upper)).toFixed(4);
+    }
+
+    function canUseSymmetricTolerance(zone) {
+      return zone && zone.available && zone.upper > 0 && zone.upper === -zone.lower;
+    }
+
+    function formatWidthValue(nominal, zone) {
+      if (!zone.available) {
+        return formatNumber(nominal) + "[" + zone.message + "]";
+      }
+      const nominalText = formatNumber(nominal);
+      const toleranceText = canUseSymmetricTolerance(zone) ? formatSymmetricTolerance(zone) : formatBracketTolerance(zone);
+      return nominalText + toleranceText;
+    }
+
+    function formatWidthBracketValue(nominal, zone) {
+      if (!zone.available) {
+        return formatWidthValue(nominal, zone);
+      }
+      return formatNumber(nominal) + formatBracketTolerance(zone);
+    }
+
+    function formatWidthAutoCadTolerance(zone) {
+      if (!zone.available) {
+        return zone.message;
+      }
+      return formatDeviation(zone.upper) + "^" + formatStackValue(zone.lower);
+    }
+
+    function formatWidthAutoCadValue(nominal, zone) {
+      if (!zone.available) {
+        return formatWidthValue(nominal, zone);
+      }
+      return formatNumber(nominal) + " " + formatWidthAutoCadTolerance(zone);
+    }
+
+    function formatWidthInstruction(label, nominal, zone) {
+      return label + " : " + formatWidthValue(nominal, zone);
+    }
+
+    function formatWidthCopyInstruction(label, nominal, zone) {
+      return label + " : " + formatWidthBracketValue(nominal, zone);
+    }
+
+    function formatDepthValue(value) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) {
+        return "-";
+      }
+      return Number(value).toFixed(1);
+    }
+
+    function formatDepthOnlyTolerance(tolerance) {
+      if (tolerance === null) {
+        return "-";
+      }
+      return "[+" + formatNumber(tolerance) + "_ 0]";
+    }
+
+    function formatDepthMinusTolerance(tolerance) {
+      if (tolerance === null) {
+        return "-";
+      }
+      return "[ 0_-" + formatNumber(tolerance) + "]";
+    }
+
+    function formatDepthOnlyAutoCadTolerance(tolerance) {
+      if (tolerance === null) {
+        return "-";
+      }
+      return "+" + formatNumber(tolerance) + "^ 0";
+    }
+
+    function formatDepthMinusAutoCadTolerance(tolerance) {
+      if (tolerance === null) {
+        return "-";
+      }
+      return "0^-" + formatNumber(tolerance);
+    }
+
+    function formatDepthOnlyValue(value, tolerance) {
+      if (value === null || tolerance === null) {
+        return "-";
+      }
+      return formatDepthValue(value) + formatDepthOnlyTolerance(tolerance);
+    }
+
+    function formatDepthMinusValue(value, tolerance) {
+      if (value === null || tolerance === null) {
+        return "-";
+      }
+      return formatDepthValue(value) + formatDepthMinusTolerance(tolerance);
+    }
+
+    function formatDepthOnlyAutoCadValue(value, tolerance) {
+      if (value === null || tolerance === null) {
+        return "-";
+      }
+      return formatDepthValue(value) + " " + formatDepthOnlyAutoCadTolerance(tolerance);
+    }
+
+    function formatDepthMinusAutoCadValue(value, tolerance) {
+      if (value === null || tolerance === null) {
+        return "-";
+      }
+      return formatDepthValue(value) + " " + formatDepthMinusAutoCadTolerance(tolerance);
+    }
+
+    function formatDepthInstruction(label, value, tolerance) {
+      return label + " : " + formatDepthOnlyValue(value, tolerance);
+    }
+
+    function buildInstructionValue(text, copyText) {
+      const value = copyText || text;
+      return "<span class=\"copy-target-wrap\" data-copy-value=\"" + escapeHtml(value) + "\"><span class=\"inline-value\">" + escapeHtml(text) + "</span>" + buildCopyButton(value) + "</span>";
+    }
+
+    function splitToleranceText(value) {
+      const text = String(value);
+      const hasSign = text.startsWith("+") || text.startsWith("-");
+      return {
+        sign: hasSign ? text.charAt(0) : "",
+        body: hasSign ? text.slice(1) : text
+      };
+    }
+
+    function buildStandardToleranceLine(className, value) {
+      const parts = splitToleranceText(value);
+      return [
+        "<span class=\"", className, "\">",
+        "<span class=\"tol-sign\">", escapeHtml(parts.sign), "</span>",
+        "<span class=\"tol-body\">", escapeHtml(parts.body), "</span>",
+        "</span>"
+      ].join("");
+    }
+
+    function isSymmetricTolerance(upper, lower) {
+      return upper.startsWith("+") && lower.startsWith("-") && upper.slice(1) === lower.slice(1);
+    }
+
+    function buildStandardStackHtml(base, upper, lower) {
+      return [
+        "<span class=\"standard-stack-value\">",
+        "<span class=\"standard-base\">", escapeHtml(base), "</span>",
+        "<span class=\"standard-tolerance-stack\">",
+        buildStandardToleranceLine("standard-upper", upper),
+        buildStandardToleranceLine("standard-lower", lower),
+        "</span>",
+        "</span>"
+      ].join("");
+    }
+
+    function buildStandardPlusMinusHtml(base, tolerance) {
+      return [
+        "<span class=\"standard-plusminus-value\">",
+        "<span class=\"standard-base\">", escapeHtml(base), "</span>",
+        "<span class=\"standard-plusminus\">±", escapeHtml(tolerance), "</span>",
+        "</span>"
+      ].join("");
+    }
+
+    function buildCadFormatItem(label, base, upper, lower, cadSuperValue, autoCadValue, cadSuperTolerance, autoCadTolerance) {
+      const canStack = base !== "-" && upper !== null && lower !== null;
+      const symmetric = canStack && isSymmetricTolerance(upper, lower);
+      return {
+        label,
+        standardHtml: canStack
+          ? (symmetric ? buildStandardPlusMinusHtml(base, upper.slice(1)) : buildStandardStackHtml(base, upper, lower))
+          : escapeHtml(cadSuperValue),
+        standardCopy: cadSuperValue,
+        standardCopyParts: canStack
+          ? (symmetric
+            ? { base, tolerance: "±" + upper.slice(1) }
+            : { base, upper, lower })
+          : { base: cadSuperValue },
+        autoCadValue,
+        cadSuperValue,
+        autoCadTolerance,
+        cadSuperTolerance
+      };
+    }
+
+    function buildCopyChip(label, value, cad) {
+      return [
+        "<button class=\"copy-chip", cad ? " copy-chip-cad" : "", "\" type=\"button\" data-copy=\"", escapeHtml(value), "\" aria-label=\"", escapeHtml(label + " " + value + " をコピー"), "\">",
+        "<span class=\"copy-chip-label\">", escapeHtml(label), "</span>",
+        "<span class=\"copy-chip-value\">", escapeHtml(value), "</span>",
+        "</button>"
+      ].join("");
+    }
+
+    function buildCopyChipRow(item) {
+      const parts = item.standardCopyParts;
+      const chips = [buildCopyChip("寸法", parts.base, false)];
+      if (parts.tolerance) {
+        chips.push(buildCopyChip("公差", parts.tolerance, false));
+      } else if (parts.upper !== undefined && parts.lower !== undefined) {
+        chips.push(buildCopyChip("上", parts.upper, false));
+        chips.push(buildCopyChip("下", parts.lower, false));
+      }
+      chips.push(buildCopyChip("AutoCAD公差", item.autoCadTolerance, true));
+      chips.push(buildCopyChip("CADSUPER公差", item.cadSuperTolerance, true));
+      return "<span class=\"copy-chip-row\">" + chips.join("") + "</span>";
+    }
+
+    function buildPrimaryInstructionDisplay(item) {
+      return [
+        "<div class=\"dimension-row\">",
+        "<span class=\"dimension-label\">", escapeHtml(item.label), " :</span>",
+        "<span class=\"standard-dimension-value\">",
+        "<span class=\"inline-value\">", item.standardHtml, "</span>",
+        buildCopyChipRow(item),
+        "</span>",
+        "</div>"
+      ].join("");
+    }
+
+    function buildStandardCopyResultLine(item) {
+      return [
+        "<div class=\"result-line\">",
+        "<div class=\"result-line-label\">標準表示 / コピー</div>",
+        "<div class=\"standard-detail-output\">",
+        "<span class=\"inline-value\">", item.standardHtml, "</span>",
+        buildCopyChipRow(item),
+        "</div>",
+        "</div>"
+      ].join("");
+    }
+
+    function buildWidthCadItem(label, nominal, zone) {
+      const cadSuperValue = formatWidthBracketValue(nominal, zone);
+      const autoCadValue = formatWidthAutoCadValue(nominal, zone);
+      if (!zone.available) {
+        return buildCadFormatItem(label, "-", null, null, cadSuperValue, autoCadValue, cadSuperValue, autoCadValue);
+      }
+      return buildCadFormatItem(
+        label,
+        formatNumber(nominal),
+        formatDeviation(zone.upper),
+        formatDeviation(zone.lower),
+        cadSuperValue,
+        autoCadValue,
+        formatBracketTolerance(zone),
+        formatWidthAutoCadTolerance(zone)
+      );
+    }
+
+    function buildDepthCadItem(label, value, tolerance, minusTolerance) {
+      const cadSuperValue = minusTolerance
+        ? formatDepthMinusValue(value, tolerance)
+        : formatDepthOnlyValue(value, tolerance);
+      const autoCadValue = minusTolerance
+        ? formatDepthMinusAutoCadValue(value, tolerance)
+        : formatDepthOnlyAutoCadValue(value, tolerance);
+      const cadSuperTolerance = minusTolerance
+        ? formatDepthMinusTolerance(tolerance)
+        : formatDepthOnlyTolerance(tolerance);
+      const autoCadTolerance = minusTolerance
+        ? formatDepthMinusAutoCadTolerance(tolerance)
+        : formatDepthOnlyAutoCadTolerance(tolerance);
+      if (value === null || tolerance === null) {
+        return buildCadFormatItem(label, "-", null, null, cadSuperValue, autoCadValue, cadSuperTolerance, autoCadTolerance);
+      }
+      return buildCadFormatItem(
+        label,
+        formatDepthValue(value),
+        minusTolerance ? "0" : "+" + formatNumber(tolerance),
+        minusTolerance ? "-" + formatNumber(tolerance) : "0",
+        cadSuperValue,
+        autoCadValue,
+        cadSuperTolerance,
+        autoCadTolerance
+      );
+    }
+
+    function getPrimaryCadItems(row, shaftZone, hubZone) {
+      if (!row) {
+        return { shaft: [], hub: [] };
+      }
+
+      return {
+        shaft: [
+          buildWidthCadItem("b1", row.b, shaftZone),
+          buildDepthCadItem("t1", row.t1, row.depthTol, false),
+          buildDepthCadItem("d-t1", state.diameter - row.t1, row.depthTol, true)
+        ],
+        hub: [
+          buildWidthCadItem("b2", row.b, hubZone),
+          buildDepthCadItem("t2", row.t2, row.depthTol, false),
+          buildDepthCadItem("d+t2", state.diameter + row.t2, row.depthTol, false)
+        ]
+      };
+    }
+
+    function buildPrimaryDimensionCard(row, shaftZone, hubZone) {
+      if (!row) {
+        return buildMissingCard("主要寸法", "表に値がありません");
+      }
+
+      const primaryItems = getPrimaryCadItems(row, shaftZone, hubZone);
+      return [
+        "<article class=\"result-card primary-dimension-card\">",
+        "<div class=\"result-card-header\"><strong>主要寸法</strong></div>",
+        "<div class=\"dimension-sides\">",
+        "<section class=\"dimension-side\">",
+        "<div class=\"dimension-side-title\">軸側</div>",
+        "<div class=\"dimension-main\">",
+        primaryItems.shaft.map(buildPrimaryInstructionDisplay).join(""),
+        "</div>",
+        "</section>",
+        "<section class=\"dimension-side\">",
+        "<div class=\"dimension-side-title\">ハブ側</div>",
+        "<div class=\"dimension-main\">",
+        primaryItems.hub.map(buildPrimaryInstructionDisplay).join(""),
+        "</div>",
+        "</section>",
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildSupportCard(row) {
+      if (!row) {
+        return buildMissingCard("参考情報", "表に値がありません");
+      }
+
+      const radiusText = getRadiusText(row);
+      const radiusToolGuide = getRadiusToolGuide(row.rMin, row.rMax);
+      return [
+        "<article class=\"result-card support-card\">",
+        "<div class=\"radius-reference\">",
+        "<div class=\"radius-range-line\">",
+        "<span class=\"radius-reference-label\">r1/r2:</span>",
+        "<span class=\"radius-range-value\">", escapeHtml(radiusText), "</span>",
+        "<span class=\"radius-reference-note\">（JIS範囲）</span>",
+        "</div>",
+        "<div class=\"radius-guide\">",
+        "<span class=\"radius-reference-label\">参考工具R:</span>",
+        "<span class=\"radius-guide-value\">", escapeHtml(radiusToolGuide.text), "</span>",
+        "<span class=\"radius-reference-note\">", escapeHtml(radiusToolGuide.note), "</span>",
+        "</div>",
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildWidthDetailBox(title, nominal, zoneSymbol, zone) {
+      if (!nominal || !zone.available) {
+        return "<article class=\"detail-box\"><strong>" + escapeHtml(title) + "</strong><p class=\"footnote\">" + escapeHtml(zone.message || "表に値がありません") + "</p></article>";
+      }
+
+      const max = formatSizeLimit(nominal, zone.upper);
+      const min = formatSizeLimit(nominal, zone.lower);
+      const widthItem = buildWidthCadItem("", nominal, zone);
+      const symmetric = canUseSymmetricTolerance(zone) ? formatSymmetricTolerance(zone) : "";
+
+      return [
+        "<article class=\"detail-box\">",
+        "<strong>", escapeHtml(title), " ", escapeHtml(zoneSymbol), "</strong>",
+        "<div class=\"detail-copy-list\">",
+        buildResultLine("上公差 / 下公差", [
+          { value: formatDeviation(zone.upper), copy: formatDeviation(zone.upper) },
+          { value: formatDeviation(zone.lower), copy: formatDeviation(zone.lower) }
+        ], true),
+        symmetric ? buildResultLine("対称公差", [{ value: symmetric, copy: widthItem.cadSuperValue }], true) : "",
+        buildResultLine("最大 / 最小寸法", [
+          { value: max + " mm", copy: max },
+          { value: min + " mm", copy: min }
+        ], true),
+        buildStandardCopyResultLine(widthItem),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildMissingCard(title, message) {
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\"><strong>", escapeHtml(title), "</strong></div>",
+        "<div class=\"result-lines\">",
+        "<div class=\"result-line\">",
+        "<div class=\"result-line-label\">規格表</div>",
+        "<div class=\"inline-group\"><span class=\"inline-value\">", escapeHtml(message), "</span></div>",
+        "</div>",
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildWidthCard(title, nominal, zoneSymbol, zone) {
+      if (!nominal) {
+        return buildMissingCard(title, "表に値がありません");
+      }
+      if (!zone.available) {
+        return buildMissingCard(title + " " + zoneSymbol, zone.message);
+      }
+
+      const max = formatSizeLimit(nominal, zone.upper);
+      const min = formatSizeLimit(nominal, zone.lower);
+      const autoCad = formatDeviation(zone.upper) + "^" + formatStackValue(zone.lower);
+      const cadSuper = "[" + formatDeviation(zone.upper) + "_" + formatStackValue(zone.lower) + "]";
+
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\">",
+        "<strong>", escapeHtml(title), "</strong>",
+        "<span class=\"badge\">", escapeHtml(zoneSymbol), "</span>",
+        "</div>",
+        "<div class=\"result-lines\">",
+        buildResultLine("寸法とクラス", [
+          { value: "b=" + formatNumber(nominal), copy: "b=" + formatNumber(nominal) },
+          { value: zoneSymbol, copy: zoneSymbol }
+        ], false),
+        buildResultLine("上公差 / 下公差", [
+          { value: formatDeviation(zone.upper), copy: formatDeviation(zone.upper) },
+          { value: formatDeviation(zone.lower), copy: formatDeviation(zone.lower) }
+        ], true),
+        buildResultLine("最大 / 最小寸法", [
+          { value: max + " mm", copy: max },
+          { value: min + " mm", copy: min }
+        ], true),
+        buildResultLine("AutoCAD 表記", [{ value: autoCad, copy: autoCad }], true),
+        buildResultLine("CADSUPER 表記", [{ value: cadSuper, copy: cadSuper }], true),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildSummaryCard(row) {
+      const fit = FIT_CLASSES[state.fit];
+      const keyText = getKeyLabel(row);
+      const source = getKeyStateLabel(row, state.diameter);
+      const note = row && row.note ? row.note : "JIS B 1301 標準寸法";
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\">",
+        "<strong>選択キー</strong>",
+        "<span class=\"badge\">", escapeHtml(source), "</span>",
+        "</div>",
+        "<div class=\"result-lines\">",
+        buildResultLine("呼び寸法 b×h", [{ value: keyText, copy: keyText }], false),
+        buildResultLine("キー溝幅クラス", [
+          { value: "軸側 " + fit.shaftZone, copy: fit.shaftZone },
+          { value: "ハブ側 " + fit.hubZone, copy: fit.hubZone }
+        ], false),
+        buildResultLine("区分", [{ value: note, copy: note }], false),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildDepthCard(title, value, tolerance, convertedLabel, convertedValue) {
+      if (value === null || tolerance === null) {
+        return buildMissingCard(title, "表に値がありません");
+      }
+
+      const tolText = "+" + formatNumber(tolerance) + " / 0";
+      const convertedText = convertedLabel + "=" + formatNumber(convertedValue);
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\"><strong>", escapeHtml(title), "</strong></div>",
+        "<div class=\"result-lines\">",
+        buildResultLine("深さ", [{ value: formatNumber(value) + " mm", copy: formatNumber(value) }], true),
+        buildResultLine("許容差", [{ value: tolText, copy: tolText }], true),
+        buildResultLine("検査換算", [{ value: convertedText + " mm", copy: convertedText }], true),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function buildRadiusCard(row) {
+      if (!row) {
+        return buildMissingCard("隅R r1/r2", "表に値がありません");
+      }
+
+      const radiusText = getRadiusText(row);
+      return [
+        "<article class=\"result-card\">",
+        "<div class=\"result-card-header\"><strong>隅R r1/r2</strong></div>",
+        "<div class=\"result-lines\">",
+        buildResultLine("範囲", [{ value: radiusText + " mm", copy: radiusText }], true),
+        "</div>",
+        "</article>"
+      ].join("");
+    }
+
+    function renderFitButtons() {
+      elements.fitButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.fit === state.fit);
+      });
+    }
+
+    function getCandidateIndexes(row) {
+      if (state.showAllKeys) {
+        return KEY_TABLE.map((_, index) => index);
+      }
+
+      const recommendedIndex = getPrimaryKeyIndex(state.diameter);
+      if (recommendedIndex === -1) {
+        return [];
+      }
+
+      const indexes = new Set();
+      const start = Math.max(0, recommendedIndex - 2);
+      const end = Math.min(KEY_TABLE.length - 1, recommendedIndex + 2);
+
+      for (let index = start; index <= end; index += 1) {
+        indexes.add(index);
+      }
+
+      return Array.from(indexes).sort((a, b) => a - b);
+    }
+
+    function renderKeySelection(row) {
+      const candidates = getCandidateIndexes(row);
+
+      elements.keyGrid.innerHTML = candidates.length
+        ? candidates.map((index) => {
+          const candidate = KEY_TABLE[index];
+          const active = row === candidate;
+          const badgeLabel = getCandidateBadgeLabel(candidate, state.diameter);
+          const subText = getCandidateSubText(candidate);
+          return "<button class=\"key-btn" + (active ? " active" : "") + (!candidate.iso ? " is-aux" : "") + "\" type=\"button\" data-key-index=\"" + index + "\">" +
+            "<strong>" + escapeHtml(getKeyLabel(candidate)) +
+              (badgeLabel ? "<span class=\"key-status-badge\">" + escapeHtml(badgeLabel) + "</span>" : "") +
+            "</strong>" +
+            "<span>" + escapeHtml(subText) + "</span>" +
+          "</button>";
+        }).join("")
+        : "<span class=\"summary-tag\">表に値がありません</span>";
+
+      const keyText = getKeyLabel(row);
+      const stateLabel = getKeyStateLabel(row, state.diameter);
+      elements.keySummary.innerHTML = [
+        "<span class=\"summary-tag\"><strong>選択中</strong>", escapeHtml(keyText), "</span>",
+        "<span class=\"summary-tag\"><strong>状態</strong>", escapeHtml(stateLabel), "</span>",
+        row && !row.iso ? "<span class=\"summary-tag\"><strong>注記</strong>" + escapeHtml(row.note) + "</span>" : ""
+      ].join("");
+
+      elements.showAllKeysButton.textContent = state.showAllKeys ? "候補を絞る" : "もっと見る";
+    }
+
+    function renderStatus(row) {
+      const recommendedIndex = getRecommendedKeyIndex(state.diameter);
+      const recommendedRow = recommendedIndex === -1 ? null : KEY_TABLE[recommendedIndex];
+
+      if (!recommendedRow) {
+        elements.diameterStatus.textContent = "軸径 φ" + formatNumber(state.diameter) + " は転記済みの表範囲外です。";
+        elements.fitState.className = "fit-state";
+        elements.fitState.innerHTML = "<strong>適用範囲外</strong><span>対応範囲は φ6〜φ500 mm です。</span>";
+        return;
+      }
+
+      const rangeText = getRangeText(recommendedRow);
+      const stateLabel = getKeyStateLabel(row, state.diameter);
+      const statusPrefix = stateLabel === "推奨" ? "推奨" : "状態 " + stateLabel;
+      elements.diameterStatus.textContent = "軸径 φ" + formatNumber(state.diameter) + " の推奨キーは " + getKeyLabel(recommendedRow) + "（" + rangeText + "）です。";
+      elements.fitState.className = stateLabel === "推奨" ? "fit-state ok" : "fit-state";
+      elements.fitState.innerHTML = [
+        "<strong>", escapeHtml(FIT_CLASSES[state.fit].label), " / ", escapeHtml(getKeyLabel(row)), "</strong>",
+        "<span>", escapeHtml(statusPrefix), "・軸側 ", escapeHtml(FIT_CLASSES[state.fit].shaftZone), " / ハブ側 ", escapeHtml(FIT_CLASSES[state.fit].hubZone), "</span>"
+      ].join("");
+    }
+
+    function renderDiagram(row) {
+      if (!row) {
+        elements.keyDiagram.innerHTML = "";
+        return;
+      }
+
+      const svgHtml = [
+        "<svg viewBox=\"0 0 640 290\" role=\"img\" aria-labelledby=\"diagramTitle\">",
+        "<title id=\"diagramTitle\">キー溝寸法図</title>",
+        "<defs>",
+        "<marker id=\"arrow-start\" markerWidth=\"5.5\" markerHeight=\"5.5\" refX=\"0\" refY=\"2.75\" orient=\"auto\"><path d=\"M5.5,0 L0,2.75 L5.5,5.5 Z\" fill=\"rgba(29,26,22,.64)\" /></marker>",
+        "<marker id=\"arrow-end\" markerWidth=\"5.5\" markerHeight=\"5.5\" refX=\"5.5\" refY=\"2.75\" orient=\"auto\"><path d=\"M0,0 L5.5,2.75 L0,5.5 Z\" fill=\"rgba(29,26,22,.64)\" /></marker>",
+        "<mask id=\"shaft-cut-mask\">",
+        "<rect x=\"0\" y=\"0\" width=\"640\" height=\"290\" fill=\"black\"></rect>",
+        "<circle cx=\"150\" cy=\"146\" r=\"78\" fill=\"white\"></circle>",
+        "<rect x=\"114\" y=\"56\" width=\"72\" height=\"44\" fill=\"black\"></rect>",
+        "</mask>",
+        "<mask id=\"hub-cut-mask\">",
+        "<rect x=\"0\" y=\"0\" width=\"640\" height=\"290\" fill=\"black\"></rect>",
+        "<rect x=\"338\" y=\"20\" width=\"252\" height=\"208\" rx=\"20\" fill=\"white\"></rect>",
+        "<circle cx=\"464\" cy=\"146\" r=\"58\" fill=\"black\"></circle>",
+        "<rect x=\"428\" y=\"72\" width=\"72\" height=\"30\" fill=\"black\"></rect>",
+        "</mask>",
+        "</defs>",
+
+        "<circle cx=\"150\" cy=\"146\" r=\"78\" class=\"diagram-shaft\" mask=\"url(#shaft-cut-mask)\"></circle>",
+        "<path d=\"M114 68 L114 100 L186 100 L186 68\" class=\"diagram-cut-boundary\"></path>",
+        "<line x1=\"114\" y1=\"54\" x2=\"114\" y2=\"110\" class=\"diagram-construction\"></line>",
+        "<line x1=\"186\" y1=\"54\" x2=\"186\" y2=\"110\" class=\"diagram-construction\"></line>",
+        "<line x1=\"114\" y1=\"52\" x2=\"186\" y2=\"52\" class=\"diagram-dimension\" marker-start=\"url(#arrow-start)\" marker-end=\"url(#arrow-end)\"></line>",
+        "<text x=\"142\" y=\"43\" class=\"diagram-label\">b1</text>",
+        "<line x1=\"204\" y1=\"68\" x2=\"204\" y2=\"100\" class=\"diagram-dimension\" marker-start=\"url(#arrow-start)\" marker-end=\"url(#arrow-end)\"></line>",
+        "<line x1=\"186\" y1=\"68\" x2=\"212\" y2=\"68\" class=\"diagram-construction\"></line>",
+        "<line x1=\"186\" y1=\"100\" x2=\"212\" y2=\"100\" class=\"diagram-construction\"></line>",
+        "<text x=\"214\" y=\"88\" class=\"diagram-label\">t1</text>",
+        "<line x1=\"76\" y1=\"100\" x2=\"76\" y2=\"224\" class=\"diagram-dimension\" marker-start=\"url(#arrow-start)\" marker-end=\"url(#arrow-end)\"></line>",
+        "<line x1=\"76\" y1=\"100\" x2=\"114\" y2=\"100\" class=\"diagram-construction\"></line>",
+        "<line x1=\"76\" y1=\"224\" x2=\"150\" y2=\"224\" class=\"diagram-construction\"></line>",
+        "<text x=\"44\" y=\"166\" class=\"diagram-label\">d-t1</text>",
+        "<path d=\"M114 92 Q114 100 122 100\" class=\"diagram-radius\"></path>",
+        "<path d=\"M98 112 L118 96\" class=\"diagram-radius-leader\"></path>",
+        "<text x=\"86\" y=\"116\" class=\"diagram-label\">r1</text>",
+        "<text x=\"108\" y=\"246\" class=\"diagram-note\">軸側キー溝</text>",
+
+        "<rect x=\"338\" y=\"20\" width=\"252\" height=\"208\" rx=\"20\" class=\"diagram-hub\" mask=\"url(#hub-cut-mask)\"></rect>",
+        "<path d=\"M428 72 L500 72 L500 101 A58 58 0 1 1 428 101 Z\" class=\"diagram-hole\"></path>",
+        "<path d=\"M428 101 L428 72 L500 72 L500 101\" class=\"diagram-cut-boundary\"></path>",
+        "<line x1=\"428\" y1=\"56\" x2=\"428\" y2=\"111\" class=\"diagram-construction\"></line>",
+        "<line x1=\"500\" y1=\"56\" x2=\"500\" y2=\"111\" class=\"diagram-construction\"></line>",
+        "<line x1=\"428\" y1=\"54\" x2=\"500\" y2=\"54\" class=\"diagram-dimension\" marker-start=\"url(#arrow-start)\" marker-end=\"url(#arrow-end)\"></line>",
+        "<text x=\"456\" y=\"45\" class=\"diagram-label\">b2</text>",
+        "<line x1=\"518\" y1=\"53\" x2=\"518\" y2=\"72\" class=\"diagram-dimension\" marker-end=\"url(#arrow-end)\"></line>",
+        "<line x1=\"518\" y1=\"107\" x2=\"518\" y2=\"88\" class=\"diagram-dimension\" marker-end=\"url(#arrow-end)\"></line>",
+        "<line x1=\"500\" y1=\"72\" x2=\"528\" y2=\"72\" class=\"diagram-construction\"></line>",
+        "<line x1=\"500\" y1=\"88\" x2=\"528\" y2=\"88\" class=\"diagram-construction\"></line>",
+        "<text x=\"527\" y=\"94\" class=\"diagram-label\">t2</text>",
+        "<line x1=\"384\" y1=\"72\" x2=\"384\" y2=\"204\" class=\"diagram-dimension\" marker-start=\"url(#arrow-start)\" marker-end=\"url(#arrow-end)\"></line>",
+        "<line x1=\"384\" y1=\"72\" x2=\"428\" y2=\"72\" class=\"diagram-construction\"></line>",
+        "<line x1=\"384\" y1=\"204\" x2=\"464\" y2=\"204\" class=\"diagram-construction\"></line>",
+        "<text x=\"344\" y=\"142\" class=\"diagram-label\">d+t2</text>",
+        "<path d=\"M428 80 Q428 72 436 72\" class=\"diagram-radius\"></path>",
+        "<path d=\"M410 58 L432 76\" class=\"diagram-radius-leader\"></path>",
+        "<text x=\"392\" y=\"61\" class=\"diagram-label\">r2</text>",
+        "<text x=\"421\" y=\"246\" class=\"diagram-note\">ハブ側キー溝</text>",
+        "</svg>"
+      ].join("");
+
+      elements.keyDiagram.innerHTML = [
+        "<div class=\"key-diagram-inner\">",
+        "<div class=\"diagram-svg-wrap\">",
+        svgHtml,
+        "</div>",
+        "</div>"
+      ].join("");
+    }
+
+    function renderCards(row) {
+      const fit = FIT_CLASSES[state.fit];
+      const shaftZone = row ? getZone(row.b, fit.shaftZone) : { available: false, message: "表に値がありません" };
+      const hubZone = row ? getZone(row.b, fit.hubZone) : { available: false, message: "表に値がありません" };
+
+      elements.resultCards.innerHTML = [
+        buildPrimaryDimensionCard(row, shaftZone, hubZone),
+        buildSupportCard(row)
+      ].join("");
+    }
+
+    function renderDetails(row) {
+      const fit = FIT_CLASSES[state.fit];
+      const shaftZone = row ? getZone(row.b, fit.shaftZone) : { available: false, message: "表に値がありません" };
+      const hubZone = row ? getZone(row.b, fit.hubZone) : { available: false, message: "表に値がありません" };
+      const bodyZone = row ? getZone(row.b, KEY_BODY_WIDTH_ZONE) : { available: false, message: "表に値がありません" };
+      const widthRange = row ? getToleranceRange(row.b) : null;
+      const boxes = [];
+
+      boxes.push([
+        "<article class=\"detail-box\">",
+        "<strong>選択キーの説明</strong>",
+        "<dl>",
+        "<dt>呼び寸法 b×h</dt><dd>", escapeHtml(row ? getKeyLabel(row) : "-"), "</dd>",
+        "<dt>結合形式</dt><dd>", escapeHtml(fit.label), "</dd>",
+        "<dt>軸側 / ハブ側</dt><dd>", escapeHtml(fit.shaftZone + " / " + fit.hubZone), "</dd>",
+        "<dt>区分</dt><dd>", escapeHtml(row ? (row.note || "JIS B 1301 標準寸法") : "-"), "</dd>",
+        "</dl>",
+        "</article>"
+      ].join(""));
+
+      boxes.push(buildWidthDetailBox("軸側キー溝 幅", row ? row.b : null, fit.shaftZone, shaftZone));
+      boxes.push(buildWidthDetailBox("ハブ側キー溝 幅", row ? row.b : null, fit.hubZone, hubZone));
+
+      if (bodyZone.available) {
+        const bodyWidthItem = buildWidthCadItem("", row.b, bodyZone);
+        boxes.push([
+          "<article class=\"detail-box\">",
+          "<strong>キー本体幅 ", escapeHtml(KEY_BODY_WIDTH_ZONE), "</strong>",
+          "<div class=\"detail-copy-list\">",
+          buildResultLine("上公差 / 下公差", [
+            { value: formatDeviation(bodyZone.upper), copy: formatDeviation(bodyZone.upper) },
+            { value: formatDeviation(bodyZone.lower), copy: formatDeviation(bodyZone.lower) }
+          ], true),
+          buildResultLine("最大 / 最小寸法", [
+            { value: formatSizeLimit(row.b, bodyZone.upper) + " mm", copy: formatSizeLimit(row.b, bodyZone.upper) },
+            { value: formatSizeLimit(row.b, bodyZone.lower) + " mm", copy: formatSizeLimit(row.b, bodyZone.lower) }
+          ], true),
+          buildStandardCopyResultLine(bodyWidthItem),
+          "</div>",
+          "</article>"
+        ].join(""));
+      } else {
+        boxes.push("<article class=\"detail-box\"><strong>キー本体幅 h9</strong><p class=\"footnote\">表に値がありません</p></article>");
+      }
+
+      boxes.push([
+        "<article class=\"detail-box\">",
+        "<strong>参照区分</strong>",
+        "<dl>",
+        "<dt>軸径 d</dt><dd>", escapeHtml(formatNumber(state.diameter) + " mm"), "</dd>",
+        "<dt>呼び幅 b</dt><dd>", escapeHtml(row ? formatNumber(row.b) + " mm" : "-"), "</dd>",
+        "<dt>幅公差区分</dt><dd>", escapeHtml(widthRange ? widthRange.display : "-"), "</dd>",
+        "<dt>状態</dt><dd>", escapeHtml(getKeyStateLabel(row, state.diameter)), "</dd>",
+        "</dl>",
+        "</article>"
+      ].join(""));
+
+      elements.detailGrid.innerHTML = boxes.join("");
+    }
+
+    function renderResults() {
+      const row = getCurrentKeyRow();
+      renderFitButtons();
+      renderStatus(row);
+      renderKeySelection(row);
+      renderDiagram(row);
+      renderCards(row);
+      renderDetails(row);
+      elements.diameterInput.value = formatNumber(state.diameter);
+    }
+
+    async function copyText(button, text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalHtml = button._copyDefaultHtml || button.innerHTML;
+        button._copyDefaultHtml = originalHtml;
+        button.textContent = "OK!";
+        button.disabled = true;
+
+        window.clearTimeout(button._copyResetTimer);
+        button._copyResetTimer = window.setTimeout(() => {
+          button.innerHTML = originalHtml;
+          button.disabled = false;
+        }, 1000);
+      } catch (error) {
+        if (button._copyDefaultHtml) {
+          button.innerHTML = button._copyDefaultHtml;
+        }
+      }
+    }
+
+    function resetToAutoForDiameterChange() {
+      state.selectedKeyIndex = null;
+      state.showAllKeys = false;
+    }
+
+    function handleCopyClick(event) {
+      const copyTarget = event.target.closest("[data-copy], .copy-target-wrap[data-copy-value]");
+      if (!copyTarget) {
+        return;
+      }
+      const button = copyTarget.matches("[data-copy]") ? copyTarget : copyTarget.querySelector("[data-copy]");
+      if (!button) {
+        return;
+      }
+      event.preventDefault();
+      copyText(button, button.dataset.copy || "");
+    }
+
+    function initializeEvents() {
+      document.querySelectorAll(".adjust-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.diameter = clampAdjustedDiameter(state.diameter + Number(button.dataset.adjust));
+          resetToAutoForDiameterChange();
+          renderResults();
+        });
+      });
+
+      elements.diameterInput.addEventListener("change", () => {
+        state.diameter = clampDiameter(elements.diameterInput.value);
+        resetToAutoForDiameterChange();
+        renderResults();
+      });
+
+      elements.fitButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          state.fit = button.dataset.fit;
+          renderResults();
+        });
+      });
+
+      elements.keyGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-key-index]");
+        if (!button) {
+          return;
+        }
+        state.selectedKeyIndex = Number(button.dataset.keyIndex);
+        renderResults();
+      });
+
+      elements.showAllKeysButton.addEventListener("click", () => {
+        state.showAllKeys = !state.showAllKeys;
+        renderResults();
+      });
+
+      elements.resultCards.addEventListener("click", handleCopyClick);
+      elements.keyDiagram.addEventListener("click", handleCopyClick);
+      elements.detailGrid.addEventListener("click", handleCopyClick);
+    }
+
+    function initialize() {
+      initializeEvents();
+      renderResults();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
